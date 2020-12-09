@@ -1,0 +1,1451 @@
+[
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_AER_AI",
+        "tags": [
+            "tropomi",
+            "aerosol",
+            "aai",
+            "uvai",
+            "pollution",
+            "air-quality"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_AER_AI",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-10T11:17:44",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_AER_LH",
+        "tags": [
+            "tropomi",
+            "aerosol",
+            "alh",
+            "uvai",
+            "pollution",
+            "air-quality"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_AER_LH",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-10T11:17:44",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_CLOUD",
+        "tags": [
+            "tropomi",
+            "cloud",
+            "climate",
+            "eu",
+            "esa",
+            "copernicus"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_CLOUD",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-05T23:24:16",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_CO",
+        "tags": [
+            "tropomi",
+            "co",
+            "carbon-monoxide",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_CO",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-11-22T12:00:13",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_HCHO",
+        "tags": [
+            "tropomi",
+            "hcho",
+            "formaldehyde",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_HCHO",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-10-02T07:58:03",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_NO2",
+        "tags": [
+            "tropomi",
+            "no2",
+            "nitrogen-dioxide",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_NO2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-10T10:05:44",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_O3",
+        "tags": [
+            "tropomi",
+            "o3",
+            "ozone",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_O3",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-10T11:02:44",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_NRTI_L3_SO2",
+        "tags": [
+            "tropomi",
+            "so2",
+            "sulphur-dioxide",
+            "sulfur-dioxide",
+            "pollution",
+            "air-quality"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/NRTI/L3_SO2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-10T11:17:44",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_AER_AI",
+        "tags": [
+            "tropomi",
+            "aerosol",
+            "aai",
+            "uvai",
+            "pollution",
+            "air-quality"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_AER_AI",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-04T13:34:21",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_AER_LH",
+        "tags": [
+            "tropomi",
+            "aerosol",
+            "alh",
+            "uvai",
+            "pollution",
+            "air-quality"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_AER_LH",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-04T13:34:21",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_CH4",
+        "tags": [
+            "tropomi",
+            "ch4",
+            "methane",
+            "climate",
+            "eu",
+            "esa"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_CH4",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2019-02-08T08:13:16",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_CLOUD",
+        "tags": [
+            "tropomi",
+            "cloud",
+            "climate",
+            "eu",
+            "esa",
+            "copernicus"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_CLOUD",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-07-04T11:34:21",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_CO",
+        "tags": [
+            "tropomi",
+            "co",
+            "carbon-monoxide",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_CO",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-06-28T10:24:07",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_HCHO",
+        "tags": [
+            "tropomi",
+            "hcho",
+            "formaldehyde",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_HCHO",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-12-05T12:14:36",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_NO2",
+        "tags": [
+            "tropomi",
+            "no2",
+            "nitrogen-dioxide",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_NO2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-06-28T10:24:07",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_O3",
+        "tags": [
+            "tropomi",
+            "o3",
+            "ozone",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_O3",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-09-08T21:19:29",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_O3_TCL",
+        "tags": [
+            "tropomi",
+            "o3",
+            "ozone",
+            "pollution",
+            "air-quality",
+            "eu"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_O3_TCL",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-04-30T10:50:26",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "COPERNICUS_S5P_OFFL_L3_SO2",
+        "tags": [
+            "tropomi",
+            "so2",
+            "sulphur-dioxide",
+            "sulfur-dioxide",
+            "pollution",
+            "air-quality"
+        ],
+        "description": "Sentinel-5 Precursor Sentinel-5 Precursor is a satellite launched on 13 October 2017 by the European Space Agency to monitor air pollution. The onboard sensor is frequently referred to as Tropomi (TROPOspheric Monitoring Instrument). All of the S5P datasets, except CH4, have two versions: Near Real-Time ...",
+        "dataset_id": "COPERNICUS/S5P/OFFL/L3_SO2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-12-05T11:53:01",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "EPA_Ecoregions_2013_L3",
+        "tags": [
+            "ecoregions",
+            "epa"
+        ],
+        "description": "The U.S. Environmental Protection Agency (USEPA) provides the Ecoregions dataset to serve as a spatial framework for the research, assessment, management, and monitoring of ecosystems and ecosystem components. Ecoregions denote areas of general similarity in ecosystems and in the type, quality, and quantity of environmental ...",
+        "dataset_id": "EPA/Ecoregions/2013/L3",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2013-04-16T00:00:00",
+        "dataset_end": "2013-04-17T00:00:00"
+    },
+    {
+        "dataset": "EPA_Ecoregions_2013_L4",
+        "tags": [
+            "ecoregions",
+            "epa"
+        ],
+        "description": "The U.S. Environmental Protection Agency (USEPA) provides the Ecoregions dataset to serve as a spatial framework for the research, assessment, management, and monitoring of ecosystems and ecosystem components. Ecoregions denote areas of general similarity in ecosystems and in the type, quality, and quantity of environmental ...",
+        "dataset_id": "EPA/Ecoregions/2013/L4",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2013-04-16T00:00:00",
+        "dataset_end": "2013-04-17T00:00:00"
+    },
+    {
+        "dataset": "FAO_GAUL_2015_level1",
+        "tags": [
+            "gaul",
+            "borders",
+            "provinces",
+            "states",
+            "departments",
+            "fao"
+        ],
+        "description": "The Global Administrative Unit Layers (GAUL) compiles and disseminates the best available information on administrative units for all the countries in the world, providing a contribution to the standardization of the spatial dataset representing administrative units. The GAUL always maintains global layers with a unified ...",
+        "dataset_id": "FAO/GAUL/2015/level1",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2014-12-19T16:45:00",
+        "dataset_end": "2014-12-19T16:45:00"
+    },
+    {
+        "dataset": "FAO_GAUL_2015_level2",
+        "tags": [
+            "gaul",
+            "borders",
+            "counties",
+            "districts",
+            "fao",
+            "un"
+        ],
+        "description": "The Global Administrative Unit Layers (GAUL) compiles and disseminates the best available information on administrative units for all the countries in the world, providing a contribution to the standardization of the spatial dataset representing administrative units. The GAUL always maintains global layers with a unified ...",
+        "dataset_id": "FAO/GAUL/2015/level2",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2014-12-19T16:45:00",
+        "dataset_end": "2014-12-19T16:45:00"
+    },
+    {
+        "dataset": "GLIMS_2016",
+        "tags": [
+            "glacier",
+            "landcover",
+            "nsidc",
+            "glims",
+            "snow",
+            "ice"
+        ],
+        "description": "Global Land Ice Measurements from Space (GLIMS) is an international initiative with the goal of repeatedly surveying the world's estimated 200,000 glaciers. The project seeks to create a globally comprehensive inventory of land ice, including measurements of glacier area, geometry, surface velocity, and snow line ...",
+        "dataset_id": "GLIMS/2016",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2015-06-15T00:00:00",
+        "dataset_end": "2015-06-16T00:00:00"
+    },
+    {
+        "dataset": "GLIMS_20171027",
+        "tags": [
+            "glacier",
+            "landcover",
+            "nsidc",
+            "glims",
+            "snow",
+            "ice"
+        ],
+        "description": "Global Land Ice Measurements from Space (GLIMS) is an international initiative with the goal of repeatedly surveying the world's estimated 200,000 glaciers. The project seeks to create a globally comprehensive inventory of land ice, including measurements of glacier area, geometry, surface velocity, and snow line ...",
+        "dataset_id": "GLIMS/20171027",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "1992-06-01T00:00:00",
+        "dataset_end": "2017-08-01T00:00:00"
+    },
+    {
+        "dataset": "GLIMS_current",
+        "tags": [
+            "glacier",
+            "landcover",
+            "nsidc",
+            "glims",
+            "snow",
+            "ice"
+        ],
+        "description": "Global Land Ice Measurements from Space (GLIMS) is an international initiative with the goal of repeatedly surveying the world's estimated 200,000 glaciers. The project seeks to create a globally comprehensive inventory of land ice, including measurements of glacier area, geometry, surface velocity, and snow line ...",
+        "dataset_id": "GLIMS/current",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "1992-06-01T00:00:00",
+        "dataset_end": "2017-08-01T00:00:00"
+    },
+    {
+        "dataset": "NCEP_RE_sea_level_pressure",
+        "tags": [
+            "atmosphere",
+            "reanalysis",
+            "climate",
+            "geophysical",
+            "pressure",
+            "ncep"
+        ],
+        "description": "The NCEP/NCAR Reanalysis Project is a joint project between the National Centers for Environmental Prediction (NCEP, formerly \"NMC\") and the National Center for Atmospheric Research (NCAR). The goal of this joint effort is to produce new atmospheric analyses using historical data as well as to ...",
+        "dataset_id": "NCEP_RE/sea_level_pressure",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1948-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NCEP_RE_surface_temp",
+        "tags": [
+            "atmosphere",
+            "reanalysis",
+            "climate",
+            "geophysical",
+            "temperature",
+            "ncep"
+        ],
+        "description": "The NCEP/NCAR Reanalysis Project is a joint project between the National Centers for Environmental Prediction (NCEP, formerly \"NMC\") and the National Center for Atmospheric Research (NCAR). The goal of this joint effort is to produce new atmospheric analyses using historical data as well as to ...",
+        "dataset_id": "NCEP_RE/surface_temp",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1948-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NCEP_RE_surface_wv",
+        "tags": [
+            "atmosphere",
+            "reanalysis",
+            "climate",
+            "geophysical",
+            "precipitable",
+            "vapor"
+        ],
+        "description": "The NCEP/NCAR Reanalysis Project is a joint project between the National Centers for Environmental Prediction (NCEP, formerly \"NMC\") and the National Center for Atmospheric Research (NCAR). The goal of this joint effort is to produce new atmospheric analyses using historical data as well as to ...",
+        "dataset_id": "NCEP_RE/surface_wv",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1948-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_ATMOS_NEAR_SURFACE_V2",
+        "tags": [
+            "atmospheric",
+            "ocean",
+            "humidity",
+            "hourly",
+            "wind",
+            "air-temperature"
+        ],
+        "description": "The Ocean Near-Surface Atmospheric Properties dataset is part of the NOAA Ocean Surface Bundle (OSB) and provides a high quality Climate Data Record (CDR) of air temperature, wind speed, and specific humidity over ice-free ocean surfaces. These atmospheric properties are calculated based on brightness temperature ...",
+        "dataset_id": "NOAA/CDR/ATMOS_NEAR_SURFACE/V2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1988-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_AVHRR_AOT_V3",
+        "tags": [
+            "atmospheric",
+            "aerosol",
+            "optical",
+            "pollution",
+            "noaa",
+            "cdr"
+        ],
+        "description": "The NOAA Climate Data Record (CDR) of Aerosol Optical Thickness (AOT) is a collection of global daily 0.1 degree derived data from the PATMOS-x AVHRR level-2b channel 1 (0.63 micron) orbital clear-sky radiance. The aerosol product is generated from AVHRR imagery in cloud-free conditions during ...",
+        "dataset_id": "NOAA/CDR/AVHRR/AOT/V3",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1981-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_AVHRR_LAI_FAPAR_V5",
+        "tags": [
+            "land",
+            "daily",
+            "lai",
+            "fapar",
+            "noaa",
+            "cdr"
+        ],
+        "description": "The NOAA Climate Data Record (CDR) of AVHRR Leaf Area Index (LAI) and Fraction of Absorbed Photosynthetically Active Radiation (FAPAR) dataset contains dervied values that characterize the canopy and photosynthetic activity of plants. This dataset is derived from the NOAA AVHRR Surface Reflectance product and ...",
+        "dataset_id": "NOAA/CDR/AVHRR/LAI_FAPAR/V5",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1981-06-24T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_AVHRR_NDVI_V5",
+        "tags": [
+            "land",
+            "daily",
+            "ndvi",
+            "noaa",
+            "cdr",
+            "avhrr"
+        ],
+        "description": "The NOAA Climate Data Record (CDR) of AVHRR Normalized Difference Vegetation Index (NDVI) contains gridded daily NDVI derived from the NOAA AVHRR Surface Reflectance product. It provides a measurement of surface vegetation coverage activity, gridded at a resolution of 0.05\u00b0 and computed globally over land ...",
+        "dataset_id": "NOAA/CDR/AVHRR/NDVI/V5",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1981-06-24T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_AVHRR_SR_V5",
+        "tags": [
+            "land",
+            "daily",
+            "sr",
+            "reflectance",
+            "noaa",
+            "cdr"
+        ],
+        "description": "The NOAA Climate Data Record (CDR) of AVHRR Surface Reflectance contains gridded daily surface reflectance and brightness temperatures derived from the Advanced Very High Resolution Radiometer (AVHRR) sensors onboard seven NOAA polar orbiting satellites. The data are gridded at a resolution of 0.05\u00b0 and computed ...",
+        "dataset_id": "NOAA/CDR/AVHRR/SR/V5",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1981-06-24T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_GRIDSAT-B1_V2",
+        "tags": [
+            "fundamental",
+            "reflectance",
+            "brightness",
+            "infrared",
+            "geostationary",
+            "noaa"
+        ],
+        "description": "This dataset provides a high quality Climate Data Record (CDR) of global infrared measurements from geostationary satellites. The geostationary satellite data (GridSat-B1) provides data from 3 channels: the CDR-quality infrared window (IRWIN) channel (near 11\u03bcm), the visible channel (near 0.6\u03bcm) and the infrared water vapor ...",
+        "dataset_id": "NOAA/CDR/GRIDSAT-B1/V2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1980-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_HEAT_FLUXES_V2",
+        "tags": [
+            "atmospheric",
+            "ocean",
+            "heat",
+            "flux",
+            "hourly",
+            "noaa"
+        ],
+        "description": "The Ocean Heat Fluxes dataset is part of the NOAA Ocean Surface Bundle (OSB) and provides a high quality Climate Data Record (CDR) of the air/ocean heat fluxes over ice-free oceans. This dataset is calculated from the OSB CDR parameters of near-surface atmospheric and sea ...",
+        "dataset_id": "NOAA/CDR/HEAT_FLUXES/V2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1988-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_OISST_V2_1",
+        "tags": [
+            "ocean",
+            "temperature",
+            "sst",
+            "oisst",
+            "ice",
+            "daily"
+        ],
+        "description": "The NOAA 1/4 degree daily Optimum Interpolation Sea Surface Temperature (OISST) provides complete ocean temperature fields constructed by combining bias-adjusted observations from different platforms (satellite, ships, buoys) on a regular global grid, with gaps filled in by interpolation. Satellite data from the Advanced Very High ...",
+        "dataset_id": "NOAA/CDR/OISST/V2_1",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1981-09-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_PATMOSX_V53",
+        "tags": [
+            "atmospheric",
+            "cloud",
+            "reflectance",
+            "brightness",
+            "temperature",
+            "optical"
+        ],
+        "description": "This dataset provides high quality Climate Data Record (CDR) of multiple cloud properties along with Advanced Very High Resolution Radiometer (AVHRR) brightness temperatures and reflectances. These data have been fitted to a 0.1 x 0.1 equal angle-grid with both ascending and descending assets generated daily ...",
+        "dataset_id": "NOAA/CDR/PATMOSX/V53",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1979-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CDR_SST_PATHFINDER_V53",
+        "tags": [
+            "sst",
+            "temperature",
+            "wind",
+            "sea-ice",
+            "noaa",
+            "avhrr"
+        ],
+        "description": "The AVHRR Pathfinder Version 5.3 Sea Surface Temperature dataset (PFV53) is a collection of global, twice-daily 4km sea surface temperature data produced in a partnership by the NOAA National Oceanographic Data Center and the University of Miami's Rosenstiel School of Marine and Atmospheric Science. PFV53 ...",
+        "dataset_id": "NOAA/CDR/SST_PATHFINDER/V53",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1981-08-24T00:00:00",
+        "dataset_end": "2014-12-31T00:00:00"
+    },
+    {
+        "dataset": "NOAA_CDR_SST_WHOI_V2",
+        "tags": [
+            "atmospheric",
+            "oisst",
+            "ocean",
+            "whoi",
+            "hourly",
+            "sst"
+        ],
+        "description": "The Sea Surface Temperature - WHOI dataset is part of the NOAA Ocean Surface Bundle (OSB) and provides a high quality Climate Data Record (CDR) of sea surface temperature over ice-free oceans. The SST values are found through modeling the diurnal variability in combination with ...",
+        "dataset_id": "NOAA/CDR/SST_WHOI/V2",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1988-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CFSR",
+        "tags": [
+            "temperature",
+            "precipitation",
+            "daylight",
+            "radiation",
+            "flux",
+            "water"
+        ],
+        "description": "The National Centers for Environmental Prediction (NCEP) Climate Forecast System Reanalysis (CFSR) was designed and executed as a global, high-resolution, coupled atmosphere-ocean-land surface-sea ice system to provide the best estimate of the state of these coupled domains over the 32-year period of record from January ...",
+        "dataset_id": "NOAA/CFSR",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1979-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_CFSV2_FOR6H",
+        "tags": [
+            "temperature",
+            "precipitation",
+            "daylight",
+            "radiation",
+            "flux",
+            "water"
+        ],
+        "description": "The National Centers for Environmental Prediction (NCEP) Climate Forecast System (CFS) is a fully coupled model representing the interaction between the Earth's atmosphere, oceans, land, and sea ice. CFS was developed at the Environmental Modeling Center (EMC) at NCEP. The operational CFS was upgraded to ...",
+        "dataset_id": "NOAA/CFSV2/FOR6H",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1979-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_DMSP-OLS_CALIBRATED_LIGHTS_V4",
+        "tags": [
+            "nighttime",
+            "visible",
+            "lights",
+            "imagery",
+            "calibrated",
+            "radiance"
+        ],
+        "description": "The Defense Meteorological Program (DMSP) Operational Line-Scan System (OLS) has a unique capability to detect visible and near-infrared (VNIR) emission sources at night. This collection contains global nighttime lights images with no sensor saturation. The sensor is typically operated at a high-gain setting to enable ...",
+        "dataset_id": "NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1996-03-16T00:00:00",
+        "dataset_end": "2011-07-31T00:00:00"
+    },
+    {
+        "dataset": "NOAA_DMSP-OLS_NIGHTTIME_LIGHTS",
+        "tags": [
+            "nighttime",
+            "visible",
+            "lights",
+            "imagery",
+            "noaa",
+            "dmsp"
+        ],
+        "description": "The Defense Meteorological Program (DMSP) Operational Line-Scan System (OLS) has a unique capability to detect visible and near-infrared (VNIR) emission sources at night. Version 4 of the DMSP-OLS Nighttime Lights Time Series consists of cloud-free composites made using all the available archived DMSP-OLS smooth resolution ...",
+        "dataset_id": "NOAA/DMSP-OLS/NIGHTTIME_LIGHTS",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1992-01-01T00:00:00",
+        "dataset_end": "2014-01-01T00:00:00"
+    },
+    {
+        "dataset": "NOAA_GFS0P25",
+        "tags": [
+            "temperature",
+            "humidity",
+            "wind",
+            "radiation",
+            "precipitation",
+            "flux"
+        ],
+        "description": "The Global Forecast System (GFS) is a weather forecast model produced by the National Centers for Environmental Prediction (NCEP). The GFS dataset consists of selected model outputs (described below) as gridded forecast variables. The 384-hour forecasts, with 3-hour forecast interval, are made at 6-hour temporal ...",
+        "dataset_id": "NOAA/GFS0P25",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2015-07-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_GOES_16_FDCC",
+        "tags": [
+            "climate",
+            "fire",
+            "hotspot",
+            "wildfire",
+            "weather",
+            "abi"
+        ],
+        "description": "GOES satellites are geostationary weather satellites run by NOAA. The GOES Fire (HSC) product contains four images: one in the form of a fire mask and the other three with pixel values identifying fire temperature, fire area, and fire radiative power. The ABI L2+ FHS ...",
+        "dataset_id": "NOAA/GOES/16/FDCC",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2017-05-24",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_GOES_16_FDCF",
+        "tags": [
+            "climate",
+            "fire",
+            "hotspot",
+            "wildfire",
+            "weather",
+            "abi"
+        ],
+        "description": "GOES satellites are geostationary weather satellites run by NOAA. The GOES Fire (HSC) product contains four images: one in the form of a fire mask and the other three with pixel values identifying fire temperature, fire area, and fire radiative power. The ABI L2+ FHS ...",
+        "dataset_id": "NOAA/GOES/16/FDCF",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2017-05-24",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_GOES_17_FDCC",
+        "tags": [
+            "climate",
+            "fire",
+            "hotspot",
+            "wildfire",
+            "weather",
+            "abi"
+        ],
+        "description": "GOES satellites are geostationary weather satellites run by NOAA. The GOES Fire (HSC) product contains four images: one in the form of a fire mask and the other three with pixel values identifying fire temperature, fire area, and fire radiative power. The ABI L2+ FHS ...",
+        "dataset_id": "NOAA/GOES/17/FDCC",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-08-27",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_GOES_17_FDCF",
+        "tags": [
+            "climate",
+            "fire",
+            "hotspot",
+            "wildfire",
+            "weather",
+            "abi"
+        ],
+        "description": "GOES satellites are geostationary weather satellites run by NOAA. The GOES Fire (HSC) product contains four images: one in the form of a fire mask and the other three with pixel values identifying fire temperature, fire area, and fire radiative power. The ABI L2+ FHS ...",
+        "dataset_id": "NOAA/GOES/17/FDCF",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2018-08-27",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_NWS_RTMA",
+        "tags": [
+            "wind",
+            "temperature",
+            "humidity",
+            "geophysical",
+            "pressure",
+            "visibility"
+        ],
+        "description": "The Real-Time Mesoscale Analysis (RTMA) is a high-spatial and temporal resolution analysis for near-surface weather conditions. This dataset includes hourly analyses at 2.5 km for CONUS.",
+        "dataset_id": "NOAA/NWS/RTMA",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2015-06-18T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_PERSIANN-CDR",
+        "tags": [
+            "precipitation",
+            "persiann",
+            "geophysical",
+            "weather",
+            "climate",
+            "noaa"
+        ],
+        "description": "PERSIANN-CDR is a daily quasi-global precipitation product that spans the period from 1983-01-01 to present. The data is produced quarterly, with a typical lag of three months. The product is developed by the Center for Hydrometeorology and Remote Sensing at the University of California, Irvine ...",
+        "dataset_id": "NOAA/PERSIANN-CDR",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "1983-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_VIIRS_001_VNP09GA",
+        "tags": [
+            "sr",
+            "reflectance",
+            "daily",
+            "vnp09ga",
+            "nasa",
+            "noaa"
+        ],
+        "description": "The Visible Infrared Imaging Radiometer Suite (VIIRS) daily surface reflectance (VNP09GA) product provides an estimate of land surface reflectance from the Suomi National Polar-Orbiting Partnership (S-NPP) VIIRS sensor. Data are provided for three imagery bands (I1, I2, I3) at nominal 500 meter resolution (~463 meter) ...",
+        "dataset_id": "NOAA/VIIRS/001/VNP09GA",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2012-01-19T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_VIIRS_001_VNP13A1",
+        "tags": [
+            "ndvi",
+            "vegetation",
+            "evi",
+            "vnp13a1",
+            "16-day",
+            "nasa"
+        ],
+        "description": "The Suomi National Polar-Orbiting Partnership (S-NPP) NASA Visible Infrared Imaging Radiometer Suite (VIIRS) Vegetation Indices (VNP13A1) data product provides vegetation indices by a process of selecting the best available pixel over a 16-day acquisition period at 500 meter resolution. The VNP13 data products are designed ...",
+        "dataset_id": "NOAA/VIIRS/001/VNP13A1",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2012-01-17",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_VIIRS_DNB_MONTHLY_V1_VCMCFG",
+        "tags": [
+            "nighttime",
+            "visible",
+            "lights",
+            "dnb",
+            "noaa",
+            "viirs"
+        ],
+        "description": "Monthly average radiance composite images using nighttime data from the Visible Infrared Imaging Radiometer Suite (VIIRS) Day/Night Band (DNB). As these data are composited monthly, there are many areas of the globe where it is impossible to get good quality data coverage for that month. ...",
+        "dataset_id": "NOAA/VIIRS/DNB/MONTHLY_V1/VCMCFG",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2012-04-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "NOAA_VIIRS_DNB_MONTHLY_V1_VCMSLCFG",
+        "tags": [
+            "nighttime",
+            "visible",
+            "lights",
+            "dnb",
+            "noaa",
+            "viirs"
+        ],
+        "description": "Monthly average radiance composite images using nighttime data from the Visible Infrared Imaging Radiometer Suite (VIIRS) Day/Night Band (DNB). As these data are composited monthly, there are many areas of the globe where it is impossible to get good quality data coverage for that month. ...",
+        "dataset_id": "NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2014-01-01T00:00:00",
+        "dataset_end": "Present"
+    },
+    {
+        "dataset": "RESOLVE_ECOREGIONS_2017",
+        "tags": [
+            "ecoregions",
+            "biodiversity",
+            "conservation",
+            "habitats",
+            "global",
+            "protection"
+        ],
+        "description": "The RESOLVE Ecoregions dataset, updated in 2017, offers a depiction of the 846 terrestrial ecoregions that represent our living planet. View the stylized map at http://ecoregions2017.appspot.com/ or in Earth Engine. Ecoregions, in the simplest definition, are ecosystems of regional extent. Specifically, ecoregions represent distinct assemblages ...",
+        "dataset_id": "RESOLVE/ECOREGIONS/2017",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-04-05",
+        "dataset_end": "2017-04-05"
+    },
+    {
+        "dataset": "TIGER_2010_Blocks",
+        "tags": [
+            "us",
+            "city",
+            "urban",
+            "neighborhood",
+            "census",
+            "tiger"
+        ],
+        "description": "The United States Census Bureau regularly releases a geodatabase named TIGER. This dataset contains the 2010 census blocks, roughly equivalent to a city block. There are just over 11 million polygon features covering the United States, the District of Columbia, Puerto Rico, and the Island ...",
+        "dataset_id": "TIGER/2010/Blocks",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2010-01-01T00:00:00",
+        "dataset_end": "2010-01-02T00:00:00"
+    },
+    {
+        "dataset": "TIGER_2010_Tracts_DP1",
+        "tags": [
+            "us",
+            "demographic",
+            "social",
+            "human",
+            "census",
+            "tiger"
+        ],
+        "description": "The United States Census Bureau regularly releases a geodatabase named TIGER. This table contains the 2010 census Demographic Profile 1 values aggregated by census tract. Tract areas vary tremendously, but in urban areas are roughly equivalent to a neighborhood. There are about 74,000 polygon features ...",
+        "dataset_id": "TIGER/2010/Tracts_DP1",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2010-01-01T00:00:00",
+        "dataset_end": "2010-01-02T00:00:00"
+    },
+    {
+        "dataset": "TIGER_2010_ZCTA5",
+        "tags": [
+            "us",
+            "zcta",
+            "zip",
+            "zipcode",
+            "census",
+            "tiger"
+        ],
+        "description": "ZIP Code tabulation areas (ZCTAs) are approximate area representations of U.S. Postal Service (USPS) 5-digit ZIP Codes. The Census Bureau defines ZCTAs by allocating each Census block that contains addresses to a single ZIP Code tabulation area, usually to the ZCTA that reflects the most ...",
+        "dataset_id": "TIGER/2010/ZCTA5",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2010-01-01T00:00:00",
+        "dataset_end": "2010-01-02T00:00:00"
+    },
+    {
+        "dataset": "TIGER_2016_Counties",
+        "tags": [
+            "us",
+            "counties",
+            "county",
+            "census",
+            "tiger"
+        ],
+        "description": "The United States Census Bureau TIGER dataset contains the 2016 boundaries for primary legal divisions of US states. In most states, these entities are termed \"counties\". In Louisiana, these divisions are known as \"parishes\". Alaska has governmental entities called \"boroughs\" which fill a similar governmental ...",
+        "dataset_id": "TIGER/2016/Counties",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2016-01-01T00:00:00",
+        "dataset_end": "2017-01-02T00:00:00"
+    },
+    {
+        "dataset": "TIGER_2016_Roads",
+        "tags": [
+            "us",
+            "roads",
+            "census",
+            "tiger"
+        ],
+        "description": "This United States Census Bureau TIGER dataset contains all road segments from the 2016 release, containing more than 19 million individual line features covering the United States, the District of Columbia, Puerto Rico, and the Island Areas. Each feature represents a road segment geometry (a ...",
+        "dataset_id": "TIGER/2016/Roads",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2016-01-01T00:00:00",
+        "dataset_end": "2017-01-02T00:00:00"
+    },
+    {
+        "dataset": "TIGER_2016_States",
+        "tags": [
+            "us",
+            "state",
+            "states",
+            "census",
+            "tiger"
+        ],
+        "description": "The United States Census Bureau TIGER dataset contains the 2016 boundaries for the primary governmental divisions of the United States. In addition to the fifty states, the Census Bureau treats the District of Columbia, Puerto Rico, and each of the island areas (American Samoa, the ...",
+        "dataset_id": "TIGER/2016/States",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2016-01-01T00:00:00",
+        "dataset_end": "2017-01-02T00:00:00"
+    },
+    {
+        "dataset": "TIGER_2018_Counties",
+        "tags": [
+            "us",
+            "counties",
+            "county",
+            "census",
+            "tiger"
+        ],
+        "description": "The United States Census Bureau TIGER dataset contains the 2018 boundaries for primary legal divisions of US states. In most states, these entities are termed \"counties\". In Louisiana, these divisions are known as \"parishes\". Alaska has governmental entities called \"boroughs\" which fill a similar governmental ...",
+        "dataset_id": "TIGER/2018/Counties",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2018-01-01T00:00:00",
+        "dataset_end": "2019-01-01T00:00:00"
+    },
+    {
+        "dataset": "TIGER_2018_States",
+        "tags": [
+            "us",
+            "state",
+            "states",
+            "census",
+            "tiger"
+        ],
+        "description": "The United States Census Bureau TIGER dataset contains the 2018 boundaries for the primary governmental divisions of the United States. In addition to the fifty states, the Census Bureau treats the District of Columbia, Puerto Rico, and each of the island areas (American Samoa, the ...",
+        "dataset_id": "TIGER/2018/States",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2018-01-01T00:00:00",
+        "dataset_end": "2019-01-01T00:00:00"
+    },
+    {
+        "dataset": "USDOS_LSIB_2017",
+        "tags": [
+            "boundaries",
+            "borders",
+            "countries",
+            "political",
+            "dos",
+            "usdos"
+        ],
+        "description": "The United States Office of the Geographer provides the Large Scale International Boundary (LSIB) dataset. It is derived from two other datasets: a LSIB line vector file and the World Vector Shorelines (WVS) from the National Geospatial-Intelligence Agency (NGA). The interior boundaries reflect U.S. government ...",
+        "dataset_id": "USDOS/LSIB/2017",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-12-29T00:00:00",
+        "dataset_end": "2017-12-29T00:00:00"
+    },
+    {
+        "dataset": "USDOS_LSIB_SIMPLE_2017",
+        "tags": [
+            "boundaries",
+            "borders",
+            "countries",
+            "political",
+            "dos",
+            "usdos"
+        ],
+        "description": "The United States Office of the Geographer provides the Large Scale International Boundary (LSIB) dataset. The detailed version (2013) is derived from two other datasets: a LSIB line vector file and the World Vector Shorelines (WVS) from the National Geospatial-Intelligence Agency (NGA). The interior boundaries ...",
+        "dataset_id": "USDOS/LSIB_SIMPLE/2017",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-03-30T00:00:00",
+        "dataset_end": "2017-03-30T00:00:00"
+    },
+    {
+        "dataset": "USGS_GAP_PAD-US_v20_designation",
+        "tags": [
+            "protected-areas",
+            "ownership",
+            "management",
+            "designation",
+            "public-lands",
+            "conservation-easements"
+        ],
+        "description": "PAD-US is America's official national inventory of U.S. terrestrial and marine protected areas that are dedicated to the preservation of biological diversity and to other natural, recreation and cultural uses, managed for these purposes through legal or other effective means. This database is separated into ...",
+        "dataset_id": "USGS/GAP/PAD-US/v20/designation",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2018-09-01T00:00:00",
+        "dataset_end": "2018-09-01T00:00:00"
+    },
+    {
+        "dataset": "USGS_GAP_PAD-US_v20_easement",
+        "tags": [
+            "protected-areas",
+            "ownership",
+            "management",
+            "designation",
+            "public-lands",
+            "conservation-easements"
+        ],
+        "description": "PAD-US is America's official national inventory of U.S. terrestrial and marine protected areas that are dedicated to the preservation of biological diversity and to other natural, recreation and cultural uses, managed for these purposes through legal or other effective means. This database is separated into ...",
+        "dataset_id": "USGS/GAP/PAD-US/v20/easement",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2018-09-01T00:00:00",
+        "dataset_end": "2018-09-01T00:00:00"
+    },
+    {
+        "dataset": "USGS_GAP_PAD-US_v20_fee",
+        "tags": [
+            "protected-areas",
+            "ownership",
+            "management",
+            "designation",
+            "public-lands",
+            "conservation-easements"
+        ],
+        "description": "PAD-US is America's official national inventory of U.S. terrestrial and marine protected areas that are dedicated to the preservation of biological diversity and to other natural, recreation and cultural uses, managed for these purposes through legal or other effective means. This database is separated into ...",
+        "dataset_id": "USGS/GAP/PAD-US/v20/fee",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2018-09-01T00:00:00",
+        "dataset_end": "2018-09-01T00:00:00"
+    },
+    {
+        "dataset": "USGS_GAP_PAD-US_v20_proclamation",
+        "tags": [
+            "protected-areas",
+            "ownership",
+            "management",
+            "designation",
+            "public-lands",
+            "conservation-easements"
+        ],
+        "description": "PAD-US is America's official national inventory of U.S. terrestrial and marine protected areas that are dedicated to the preservation of biological diversity and to other natural, recreation and cultural uses, managed for these purposes through legal or other effective means. This database is separated into ...",
+        "dataset_id": "USGS/GAP/PAD-US/v20/proclamation",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2018-09-01T00:00:00",
+        "dataset_end": "2018-09-01T00:00:00"
+    },
+    {
+        "dataset": "USGS_WBD_2017_HUC02",
+        "tags": [
+            "water",
+            "watershed",
+            "wbd",
+            "hydrology",
+            "usgs"
+        ],
+        "description": "The Watershed Boundary Dataset (WBD) is a comprehensive aggregated collection of hydrologic unit (HU) data consistent with the national criteria for delineation and resolution. It defines the areal extent of surface water drainage to a point except in coastal or lake front areas where there ...",
+        "dataset_id": "USGS/WBD/2017/HUC02",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-04-22T00:00:00",
+        "dataset_end": "2017-04-23T00:00:00"
+    },
+    {
+        "dataset": "USGS_WBD_2017_HUC04",
+        "tags": [
+            "water",
+            "watershed",
+            "wbd",
+            "hydrology",
+            "usgs"
+        ],
+        "description": "The Watershed Boundary Dataset (WBD) is a comprehensive aggregated collection of hydrologic unit (HU) data consistent with the national criteria for delineation and resolution. It defines the areal extent of surface water drainage to a point except in coastal or lake front areas where there ...",
+        "dataset_id": "USGS/WBD/2017/HUC04",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-04-22T00:00:00",
+        "dataset_end": "2017-04-23T00:00:00"
+    },
+    {
+        "dataset": "USGS_WBD_2017_HUC06",
+        "tags": [
+            "water",
+            "watershed",
+            "wbd",
+            "hydrology",
+            "usgs"
+        ],
+        "description": "The Watershed Boundary Dataset (WBD) is a comprehensive aggregated collection of hydrologic unit (HU) data consistent with the national criteria for delineation and resolution. It defines the areal extent of surface water drainage to a point except in coastal or lake front areas where there ...",
+        "dataset_id": "USGS/WBD/2017/HUC06",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-04-22T00:00:00",
+        "dataset_end": "2017-04-23T00:00:00"
+    },
+    {
+        "dataset": "USGS_WBD_2017_HUC08",
+        "tags": [
+            "water",
+            "watershed",
+            "wbd",
+            "hydrology",
+            "usgs"
+        ],
+        "description": "The Watershed Boundary Dataset (WBD) is a comprehensive aggregated collection of hydrologic unit (HU) data consistent with the national criteria for delineation and resolution. It defines the areal extent of surface water drainage to a point except in coastal or lake front areas where there ...",
+        "dataset_id": "USGS/WBD/2017/HUC08",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-04-22T00:00:00",
+        "dataset_end": "2017-04-23T00:00:00"
+    },
+    {
+        "dataset": "USGS_WBD_2017_HUC10",
+        "tags": [
+            "water",
+            "watershed",
+            "wbd",
+            "hydrology",
+            "usgs"
+        ],
+        "description": "The Watershed Boundary Dataset (WBD) is a comprehensive aggregated collection of hydrologic unit (HU) data consistent with the national criteria for delineation and resolution. It defines the areal extent of surface water drainage to a point except in coastal or lake front areas where there ...",
+        "dataset_id": "USGS/WBD/2017/HUC10",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-04-22T00:00:00",
+        "dataset_end": "2017-04-23T00:00:00"
+    },
+    {
+        "dataset": "USGS_WBD_2017_HUC12",
+        "tags": [
+            "water",
+            "watershed",
+            "wbd",
+            "hydrology",
+            "usgs"
+        ],
+        "description": "The Watershed Boundary Dataset (WBD) is a comprehensive aggregated collection of hydrologic unit (HU) data consistent with the national criteria for delineation and resolution. It defines the areal extent of surface water drainage to a point except in coastal or lake front areas where there ...",
+        "dataset_id": "USGS/WBD/2017/HUC12",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-04-22T00:00:00",
+        "dataset_end": "2017-04-23T00:00:00"
+    },
+    {
+        "dataset": "WCMC_WDPA_current_points",
+        "tags": [
+            "wdpa",
+            "protected",
+            "boundaries",
+            "marine",
+            "mpa",
+            "iucn"
+        ],
+        "description": "The World Database on Protected Areas (WDPA) is the most up-to-date and complete source of information on protected areas, updated monthly with submissions from governments, non-governmental organizations, landowners, and communities. It is managed by the United Nations Environment Programme's World Conservation Monitoring Centre (UNEP-WCMC) with ...",
+        "dataset_id": "WCMC/WDPA/current/points",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-07-01T00:00:00",
+        "dataset_end": "2020-06-01T00:00:00"
+    },
+    {
+        "dataset": "WCMC_WDPA_current_polygons",
+        "tags": [
+            "wdpa",
+            "protected",
+            "boundaries",
+            "marine",
+            "mpa",
+            "iucn"
+        ],
+        "description": "The World Database on Protected Areas (WDPA) is the most up-to-date and complete source of information on protected areas, updated monthly with submissions from governments, non-governmental organizations, landowners, and communities. It is managed by the United Nations Environment Programme's World Conservation Monitoring Centre (UNEP-WCMC) with ...",
+        "dataset_id": "WCMC/WDPA/current/polygons",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2017-07-01T00:00:00",
+        "dataset_end": "2020-06-01T00:00:00"
+    },
+    {
+        "dataset": "WRI_GPPD_power_plants",
+        "tags": [
+            "infrastructure",
+            "energy",
+            "climate",
+            "power",
+            "power-plants",
+            "wri"
+        ],
+        "description": "The Global Power Plant Database is a comprehensive, open source database of power plants around the world. It centralizes power plant data to make it easier to navigate, compare and draw insights. Each power plant is geolocated and entries contain information on plant capacity, generation, ...",
+        "dataset_id": "WRI/GPPD/power_plants",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2018-06-11",
+        "dataset_end": "2018-06-11"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_1",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_1",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_10",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_10",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_11",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_11",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_12",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_12",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_2",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_2",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_3",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_3",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_4",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_4",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_5",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_5",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_6",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_6",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_7",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_7",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_8",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_8",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_Basins_hybas_9",
+        "tags": [
+            "geophysical",
+            "watersheds",
+            "wwf",
+            "hydrosheds",
+            "water",
+            "hydrology"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/Basins/hybas_9",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WWF_HydroSHEDS_v1_FreeFlowingRivers",
+        "tags": [
+            "geophysical",
+            "river-networks",
+            "flow-regulation",
+            "wwf",
+            "hydrosheds",
+            "water"
+        ],
+        "description": "HydroSHEDS is a mapping product that provides hydrographic information for regional and global-scale applications in a consistent format. It offers a suite of geo-referenced datasets (vector and raster) at various scales, including river networks, watershed boundaries, drainage directions, and flow accumulations. HydroSHEDS is based on ...",
+        "dataset_id": "WWF/HydroSHEDS/v1/FreeFlowingRivers",
+        "dataset_type": "FeatureCollection",
+        "dataset_start": "2000-02-11T00:00:00",
+        "dataset_end": "2000-02-22T00:00:00"
+    },
+    {
+        "dataset": "WorldPop_GP_100m_pop",
+        "tags": [
+            "population",
+            "demography",
+            "worldpop"
+        ],
+        "description": "Global high-resolution, contemporary data on human population distributions are a prerequisite for the accurate measurement of the impacts of population growth, for monitoring changes, and for planning interventions. The WorldPop project aims to meet these needs through the provision of detailed and open access population ...",
+        "dataset_id": "WorldPop/GP/100m/pop",
+        "dataset_type": "ImageCollection",
+        "dataset_start": "2000-01-01T00:00:00",
+        "dataset_end": "2020-01-01T00:00:00"
+    }
+]

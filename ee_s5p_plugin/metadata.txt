@@ -1,0 +1,47 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Google Earth Engine Sentinel 5P Ad Hoc Query
+qgisMinimumVersion=3.0
+description=This plugin ports the Copernicus S5P Near Real Time and Offline L3 datasets found on Google Earth Engine
+version=0.1
+author=Brandon Crosbie
+email=bcrosb31@gmail.com
+
+about=This plugin ports the European Space Agency and Copernicus Sentinel-5 Precursor mission data from the Google Earth Engine Data Catalog. This dataset inlcudes TROPOMI instrument measurments that record wavelength reflectance to detect atmospheric concentrations of ozone, methane, formaldehyde, aerosol, carbon monoxide, nitrogen oxide, and sulphur dioxide as well as cloud characteristics. This catalog is stored as an Image Collection, and can be filtered by start and end dates, as well as spatially. The purpose of this port is to allow any user familiar with GIS shapes and polygons to extract data at a custom resolution in the most convenient fashion. Google Earth Engine also includes Feature Collections that have been ported with this tool to help the user get started with established Geometric Filters such as Countries, Regions, (US) Counties), as well as datapoints like Power Plant locations to further analyze Emissions Factors with this atmospheric data. The data is handled as vector geometries, as the measurements are discrete in time intervals from the time of the Satellite Image Capture. The data can be saved as .csv, .json, .geojson in this first iteration.
+
+tracker=http://bugs
+repository=http://repo
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python
+
+homepage=http://homepage
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+
