@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/ee_s5p_plugin" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
