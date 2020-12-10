@@ -47,7 +47,11 @@ if platform.system() == 'Windows':
 else:
     try:
         os.system("pip install beautifulsoup4")
-        os.system("pip install geojson")
     except:
         os.system("sudo pip install beautifulsoup4")
-        os.system("sudo pip install geojson")
+
+
+    try:
+        os.system("pip3 install geojson")
+    except:
+        os.system("sudo pip3 install geojson")
