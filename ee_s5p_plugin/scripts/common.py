@@ -1,9 +1,10 @@
 import os, sys
 import json
 import math
-
 import requests
-from bs4 import BeautifulSoup
+import platform
+import subprocess
+
 
 
 #==============================================================
@@ -11,6 +12,23 @@ from bs4 import BeautifulSoup
 #==============================================================
 
 def find_me():
+    """ IP BASED LOCATION FINDER
+    Requires BeautifulSoup4"""
+
+    try:
+        from bs4 import BeautifulSoup
+    except:
+        if platform.system() == 'Windows':
+            subprocess.check_call(['python', '-m', 'pip', 'install', 'beautifulsoup4'])
+            # subprocess.check_call(['python', '-m', 'pip', 'install', 'geojson'])
+        else:
+            try:
+                os.system("pip install beautifulsoup4")
+            except:
+                os.system("sudo pip install beautifulsoup4")
+
+
+
     url = "https://iplocation.com"
     response = requests.get(url) 
     htmlCode = response.text 

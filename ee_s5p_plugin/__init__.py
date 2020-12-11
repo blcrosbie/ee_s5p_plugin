@@ -34,24 +34,3 @@ def classFactory(iface):  # pylint: disable=invalid-name
     #
     from .ee_s5p_plugin import EarthEngineSentinel5P
     return EarthEngineSentinel5P(iface)
-
-
-import os
-import platform
-import sys
-import subprocess
-
-if platform.system() == 'Windows':
-    subprocess.check_call(['python', '-m', 'pip', 'install', 'beautifulsoup4'])
-    subprocess.check_call(['python', '-m', 'pip', 'install', 'geojson'])
-else:
-    try:
-        os.system("pip install beautifulsoup4")
-    except:
-        os.system("sudo pip install beautifulsoup4")
-
-
-    try:
-        os.system("pip3 install geojson")
-    except:
-        os.system("sudo pip3 install geojson")
