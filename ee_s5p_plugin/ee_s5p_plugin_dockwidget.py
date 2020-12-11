@@ -27,7 +27,7 @@ import sys
 import math
 import csv
 import json
-import geojson
+
 import requests
 import time
 import datetime
@@ -81,12 +81,15 @@ from PyQt5.QtCore import QVariant
 from PyQt5.QtCore import QDate
 
 
-# EXTRA REQUIREMENTS
-# Requires pip installation for QGIS
-from bs4 import BeautifulSoup
+# Check for EE package dependency
+try:
+    import ee
 
-# Earth Engine Python Library
-import ee
+except Exception as e:
+    QMessageBox.information(self, 'EE PLUGIN MISSING: {}'.format(e), "Please Install Dependency Plugin:\n\nGoogle Earth Engine", QMessageBox.Ok)
+    sys.exit()
+
+
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -106,7 +109,9 @@ class EarthEngineSentinel5PDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # http://doc.qt.io/qt-5/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-    
+
+        # Initialize EE plugin Dependency
+        self.init_ee_plugin()
         #=====================================
         # User added init methods for ee_s5p_plugin
         #=====================================
@@ -280,10 +285,10 @@ class EarthEngineSentinel5PDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """Run this with Start"""
         try:
             import ee
-            # from ee_plugin import Map
-        except Exception as e:
-            QMessageBox.information(self, 'EE PLUGIN MISSING', str(e), QMessageBox.Ok)
 
+        except Exception as e:
+            QMessageBox.information(self, 'EE PLUGIN MISSING: {}'.format(e), "Please Install Dependency Plugin:\n\nGoogle Earth Engine", QMessageBox.Ok)
+            self.closingPlugin.emit()
         return
 
 
@@ -636,9 +641,6 @@ class EarthEngineSentinel5PDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Initialize the catalog
         self.init_ee_catalog()
 
-        # Initialize EE plugin
-        self.init_ee_plugin()
-
         # Set Earliest Time
         self.beginningOfTime()
         # Now set the minimumDate for start from the total dataset
@@ -874,15 +876,18 @@ class EarthEngineSentinel5PDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         response = auth_msg.exec()
         if response == QMessageBox.Yes:
             if self.locationSearchLatitudeLE.text() == '' or self.locationSearchLongitudeLE == '':
-                from .scripts import common
-                loc = common.find_me()
-                lat = loc['lat']
-                lon = loc['lon']
+                try:                
+                    from .scripts import common
+                    loc = common.find_me()
+                    lat = loc['lat']
+                    lon = loc['lon']
 
-                # Display Lat/Lon in LE entry boxes
-                self.locationSearchLatitudeLE.setText(str(lat))
-                self.locationSearchLongitudeLE.setText(str(lon))
-
+                    # Display Lat/Lon in LE entry boxes
+                    self.locationSearchLatitudeLE.setText(str(lat))
+                    self.locationSearchLongitudeLE.setText(str(lon))
+                except:
+                    QMessageBox.information(self, 'Information', 'iplocation.com site temporarily down\n\nPlease manually enter coordinates before next "Find Me" Attempt', QMessageBox.Ok)
+                    return
             else:
                 lat = float(self.locationSearchLatitudeLE.text())
                 lon = float(self.locationSearchLongitudeLE.text())
@@ -1234,7 +1239,10 @@ class EarthEngineSentinel5PDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         elif time_window == 'YTD':
             self.yearToDate()
         else:
-            pass
+            # reset the time
+            self.beginningOfTime()
+            self.endOfTime()
+
 
     def yearToDate(self):
         """ This Button Will have the only override mechanism to set
@@ -1894,7 +1902,7 @@ class EarthEngineSentinel5PDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     def saveResults(self):
         """open file dialog to select exising csv/text file and if accepted, update GUI accordingly"""
-        from .scripts import file_handler
+
         # For now, only supporting .shp, next look at GeoPackage/GeoJson/CSV list of points
         if isinstance(self.extract_data, dict):
             supported_fileTypes = ['.geojson', '.json'] #, '.shp', '.gpkg']
@@ -1945,7 +1953,7 @@ class EarthEngineSentinel5PDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                     save_geojson = save_data
 
                 with open(fn, 'w') as fw:
-                    geojson.dump(save_geojson, fw, indent=4)
+                    json.dump(save_geojson, fw, indent=4)
 
             else:
                 QMessageBox.information(self, 'Error: Failed to Save', 'Unsupported File Type: {}'.format(fileType), QMessageBox.Ok)
