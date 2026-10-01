@@ -4,7 +4,7 @@ qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
 supportsQt6=True
 description=Search the Google Earth Engine Data Catalog from QGIS -- Sentinel-5P and 1,100+ other datasets -- filter it, then extract data onto the map, auto-scaling large areas into H3 tiles.
-version=1.0.1
+version=1.0.2
 author=Brandon Crosbie
 email=bcrosb31@gmail.com
 
@@ -23,7 +23,21 @@ deprecated=False
 hasProcessingProvider=no
 server=False
 
-changelog=1.0.1 (2026-10-01)
+changelog=1.0.2 (2026-10-01)
+    Live progress feedback for heavy downloads.
+    - A status panel under the results list reports position, records fetched,
+      throughput and remaining time, and a Cancel button to stop the job.
+    - The remaining-time estimate is measured as the job runs, so it corrects
+      itself instead of repeating a figure guessed before it started.
+    - Rate limiting is shown as "rate limited, backing off" rather than a bar
+      that appears to stall, and splitting an oversized tile is reported.
+    - A single opaque request gets a busy bar with a ticking elapsed time, so a
+      heavy feature collection looks alive rather than hung.
+    - Redraws are throttled to five a second, so a 500 tile job does not repaint
+      the dock faster than it fetches.
+    - No new dependencies: plain Qt widgets.
+
+    1.0.1 (2026-10-01)
     Auto-scaling for large areas.
     - Areas too large for one Earth Engine call are tiled into H3 hexagons. The
       tiling is chosen arithmetically from the request limit, so planning is

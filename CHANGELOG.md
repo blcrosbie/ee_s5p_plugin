@@ -2,6 +2,61 @@
 
 This project follows [Semantic Versioning](https://semver.org).
 
+## [1.0.2] — 2026-10-01
+
+Live progress feedback, for the heavy downloads the previous release made possible.
+
+Auto-scaling turned a refused request into several hundred successful ones, which
+left a new problem: a job that runs for minutes behind a bare percentage gives the
+user no way to tell whether it is working, how much is left, or whether something
+has gone wrong. The status panel answers all of that in one line:
+
+```
+Tile 143 of 545 · 28,600 records · 2.1 tiles/s · about 3 min 11 s left
+```
+
+### The panel
+
+- Sits under the results list, shows itself only while something is running, and
+  carries a **Cancel** button.
+- Reports position, records fetched so far, measured throughput and remaining
+  time.
+- **The remaining time is measured, not predicted.** Once there are at least three
+  completed tiles the estimate comes from actual throughput, so it corrects itself
+  as the job proceeds. Before that it falls back to the rate the plan predicted,
+  because a two-sample rate gives a wild answer.
+- **Rate limiting is stated, not implied.** A throttled job shows "rate limited,
+  backing off" instead of a bar that appears to have stalled — the one case where
+  a stalled bar is correct behaviour and looks exactly like a hang.
+- Splitting an oversized tile is reported, and the denominator grows to match.
+- Failures appear as a running count, so a job with a few bad tiles does not look
+  perfectly healthy until the end.
+- A **single opaque request** — one big feature collection, say — gets a busy bar
+  and a ticking elapsed time. Earth Engine reports no progress for these, so a
+  percentage would be a lie; an elapsed counter at least shows it is alive.
+- Cancellation is co-operative, and the panel says "Stopping…" rather than
+  pretending the job has already ended while requests are still in flight.
+
+### Implementation notes
+
+- **No new dependencies.** Plain `QProgressBar`, `QLabel` and `QToolButton`, all
+  already imported. Nothing was added for this that could complicate installation
+  through the plugin repository.
+- The statistics live in `core/progress.py` with no Qt import, so the wording and
+  the arithmetic are unit tested; `gui/progress.py` is only the widget.
+- Progress crosses from worker threads as a plain dict, which Qt's queued
+  connections handle safely; widgets are only ever touched on the GUI thread.
+- **Redraws are throttled to five a second.** A 500 tile job with eight workers
+  would otherwise repaint the dock faster than it fetches, competing with the
+  threads doing the work. The first and last updates always get through, so the
+  panel never settles on a stale partial state.
+
+### Fixed
+
+- `ProgressTracker`'s start time used `default_factory=time.perf_counter`, which
+  binds the original function at class-creation time and so could not be
+  substituted in tests. Deferred to call time.
+
 ## [1.0.1] — 2026-10-01
 
 Auto-scaling large areas into H3 tiles, with optional parallel fetching.

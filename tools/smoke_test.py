@@ -353,6 +353,208 @@ def check_autoscale(checks: Checks, dock) -> None:
         ee_mod.ring_to_ee = original_ring
 
 
+def check_progress_panel(checks: Checks, dock) -> None:
+    """Drive the status panel the way a running job does.
+
+    What needs a real QGIS here is the widget: that a busy bar and a determinate
+    bar are set up correctly, that the status line reaches the label, and that
+    Cancel reports itself without pretending the job has already stopped.
+    """
+    from ee_s5p_plugin.core.progress import ProgressSnapshot
+
+    panel = dock.progressPanel
+    # isHidden(), not isVisible(): the main window is never shown in this harness,
+    # so isVisible() is False for every child regardless of its own flag.
+    checks.check("the status panel is hidden when idle", panel.isHidden())
+
+    # -- indeterminate: one opaque Earth Engine call ---------------------
+    panel.start("Extracting COPERNICUS/S5P/OFFL/L3_NO2", indeterminate=True)
+    checks.check("panel shows for an indeterminate job", not panel.isHidden())
+    checks.check(
+        "an indeterminate job gets a busy bar",
+        panel.bar.minimum() == 0 and panel.bar.maximum() == 0,
+    )
+    checks.check(
+        "the dataset name reaches the status line",
+        "COPERNICUS/S5P" in panel.statusLabel.text(),
+        panel.statusLabel.text(),
+    )
+    panel.finish()
+    checks.check("panel hides when the job finishes", panel.isHidden())
+
+    # -- determinate: a tiled extraction ---------------------------------
+    panel.start("Extracting", total=545, unit="tile", expected_rate=0.5)
+    checks.check(
+        "a tiled job gets a 0..100 bar",
+        panel.bar.minimum() == 0 and panel.bar.maximum() == 100,
+    )
+
+    panel.update_from(
+        ProgressSnapshot(
+            phase="Extracting",
+            done=143,
+            total=545,
+            records=28_600,
+            elapsed=68.0,
+            rate=2.1,
+            unit="tile",
+        ).to_dict()
+    )
+    text = panel.statusLabel.text()
+    checks.check(
+        "the bar tracks the tile count",
+        panel.bar.value() == 26,
+        f"value={panel.bar.value()}",
+    )
+    for fragment in ("143 of 545", "28,600 records", "tiles/s", "left"):
+        checks.check(f"status line reports {fragment!r}", fragment in text, text)
+
+    # -- throttling must look like throttling, not like a hang ------------
+    panel.update_from(
+        ProgressSnapshot(
+            phase="Extracting",
+            done=200,
+            total=545,
+            records=40_000,
+            elapsed=120.0,
+            rate=1.6,
+            unit="tile",
+            throttled=True,
+        ).to_dict()
+    )
+    checks.check(
+        "a rate-limited job says so",
+        "rate limited" in panel.statusLabel.text(),
+        panel.statusLabel.text(),
+    )
+
+    # -- a split tile grows the denominator -------------------------------
+    panel.update_from(
+        ProgressSnapshot(
+            phase="Extracting",
+            done=200,
+            total=552,
+            unit="tile",
+            note="split into 7 smaller tiles",
+        ).to_dict()
+    )
+    checks.check(
+        "splitting a tile is reported",
+        "split into 7" in panel.statusLabel.text(),
+        panel.statusLabel.text(),
+    )
+
+    # -- cancel ----------------------------------------------------------
+    asked = []
+    panel.cancelRequested.connect(lambda: asked.append(True))
+    panel.cancelBTN.click()
+    checks.check("Cancel emits a request", bool(asked))
+    checks.check(
+        "Cancel says it is stopping, not that it has stopped",
+        "Stopping" in panel.statusLabel.text(),
+        panel.statusLabel.text(),
+    )
+    checks.check("Cancel disables itself once pressed", not panel.cancelBTN.isEnabled())
+
+    # -- completion ------------------------------------------------------
+    panel.update_from(
+        ProgressSnapshot(
+            phase="Finished",
+            done=545,
+            total=545,
+            records=109_000,
+            elapsed=260.0,
+            rate=2.1,
+            unit="tile",
+        ).to_dict()
+    )
+    checks.check("a finished job reads 100%", panel.bar.value() == 100)
+    checks.check(
+        "a finished job reports its total time",
+        "done in" in panel.statusLabel.text(),
+        panel.statusLabel.text(),
+    )
+    panel.finish()
+
+    # -- the task actually feeds the panel --------------------------------
+    from ee_s5p_plugin.core import hexgrid
+    from ee_s5p_plugin.core import plan as plan_mod
+    from ee_s5p_plugin.gui.tasks import ChunkedExtractTask
+
+    dataset = dock.catalog.get("COPERNICUS/S5P/OFFL/L3_NO2")
+    small_area = {
+        "type": "Polygon",
+        "coordinates": [
+            [[-80.5, 40.0], [-79.5, 40.0], [-79.5, 40.6], [-80.5, 40.6], [-80.5, 40.0]]
+        ],
+    }
+    grid = hexgrid.grid()
+    built = plan_mod.plan(
+        dataset,
+        small_area,
+        dataset.band_names[:2],
+        "2024-06-01",
+        "2024-06-02",
+        resolution_m=1113.2,
+        tile_grid=grid,
+        force_tiling=True,
+        minimum_resolution=5,
+        maximum_resolution=5,
+    )
+    task = ChunkedExtractTask(built, workers=2, tile_grid=grid)
+    checks.check(
+        "the task seeds an ETA from the plan",
+        task.tracker.expected_rate > 0,
+        f"{task.tracker.expected_rate:.3f} tiles/s",
+    )
+
+    received = []
+    task.progressDetail.connect(received.append)
+
+    from ee_s5p_plugin.core import earthengine as ee_mod
+
+    original_extract, original_ring = ee_mod.extract, ee_mod.ring_to_ee
+    try:
+        ee_mod.ring_to_ee = lambda ring: ("region", len(ring))
+        ee_mod.extract = lambda request: [
+            {"longitude": -80.0, "latitude": 40.0, "v": 1},
+            {"longitude": -79.9, "latitude": 40.1, "v": 2},
+        ]
+        task.run()
+    finally:
+        ee_mod.extract, ee_mod.ring_to_ee = original_extract, original_ring
+
+    checks.check(
+        "the task emits progress updates",
+        len(received) > 0,
+        f"{len(received)} updates for {built.tile_count} tiles",
+    )
+    checks.check(
+        "updates are collapsed rather than one per tile",
+        len(received) <= built.tile_count + 2,
+        f"{len(received)} updates for {built.tile_count} tiles",
+    )
+    if received:
+        final = ProgressSnapshot.from_dict(received[-1])
+        checks.check(
+            "the last update is the finished state",
+            final.done == final.total and final.phase == "Finished",
+            f"done={final.done} total={final.total} phase={final.phase}",
+        )
+        checks.check(
+            "the last update carries the record count",
+            final.records == 2 * built.tile_count,
+            f"{final.records} records",
+        )
+        panel.update_from(received[-1])
+        checks.check(
+            "the final update renders",
+            "done in" in panel.statusLabel.text(),
+            panel.statusLabel.text(),
+        )
+        panel.finish()
+
+
 def request_fits(tile, built) -> bool:
     from ee_s5p_plugin.core import request as request_mod
 
@@ -544,6 +746,7 @@ def run() -> int:
 
         check_styling(checks)
         check_autoscale(checks, dock)
+        check_progress_panel(checks, dock)
 
         plugin.unload()
         checks.check("unload removes the action", len(iface.toolbar_actions) == 0)
