@@ -1,6 +1,10 @@
 # Development and CI dependencies.
 # The plugin itself needs nothing beyond what QGIS already bundles: the Python
-# standard library plus `requests`. `ee` comes from the Google Earth Engine plugin.
+# standard library plus `requests`. `ee` comes from the Google Earth Engine plugin,
+# and `h3` is an optional runtime extra (the plugin falls back without it).
 pytest>=7.4
 ruff>=0.6
 requests>=2.31
+
+# Optional at runtime, installed in CI so the real H3 code path is tested.
+h3>=4.0

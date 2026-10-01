@@ -2,6 +2,101 @@
 
 This project follows [Semantic Versioning](https://semver.org).
 
+## [1.0.1] — 2026-10-01
+
+Auto-scaling large areas into H3 tiles, with optional parallel fetching.
+
+### Auto-scale
+
+Earth Engine answers at most 1,048,576 values per `getRegion` call (and 5,000
+features per table call), so a whole US state of Sentinel-5P at native resolution
+cannot be fetched in one request. Rather than refusing, the plugin now offers to
+tile it.
+
+- The tiling resolution is derived **arithmetically** from the limit, not found by
+  probing: point count scales as the inverse square of the ground resolution, so
+  the per-tile area budget is `limit x (resolution/1000)² / (bands x images)`. The
+  search then walks H3 resolutions from coarse to fine and takes the first that
+  fits — coarse is better, because it means fewer round trips. Planning is instant
+  and costs no quota.
+- The dialog shows what it will cost before anything is sent: tile count, tile
+  size with a human comparison ("about 253 km² per cell, a metropolitan area"),
+  per-tile value estimate, and the estimated wall-clock time. The resolution can
+  be overridden either way.
+- A short-circuit comes first: if the whole area already fits, nothing is tiled.
+
+Worked example — Pennsylvania, 3 bands, at 1,113 m:
+
+| Request | Tiling | Tiles |
+|---|---|---|
+| 1 day | not needed | 1 |
+| 1 month | H3 res 4 (~1,770 km²) | 84 |
+| 1 year | H3 res 5 (~253 km²) | 545 |
+
+### Parallel fetching
+
+- Worker count is selectable from 1 to **half the machine's CPUs**, capped at 8
+  because past that Earth Engine throttles anyway. The dialog shows the predicted
+  time and speed-up for each choice, and the selection is remembered.
+- **Sequential is the default.** It is a little slower but cannot be rate limited
+  for concurrency, and it is one less thing to reason about when something fails.
+- These are **threads, not processes**: an Earth Engine request is almost entirely
+  an HTTPS round trip, Python releases the GIL while waiting, and threads avoid
+  re-importing QGIS per worker and pickling `ee` objects. The CPU-based cap is
+  kept because it is the intuitive dial and stops the plugin monopolising a
+  laptop, but the real ceiling is usually Earth Engine's rate limit.
+- Measured latency replaces the estimate as a job runs, so the reported time
+  converges on the truth.
+
+### Rate limits and refusals
+
+- HTTP 429, quota and "too many concurrent" errors back off exponentially with
+  jitter — without jitter, parallel workers retry in lockstep and hit the server
+  again together.
+- Backoff is **shared**: rate limiting applies to the account, not to one request,
+  so a 429 narrows the concurrency allowance for every worker and pauses them all,
+  then widens again after a run of successes. A throttled job slows down instead
+  of failing.
+- "Too many values" and "user memory limit exceeded" are classified as *too large*
+  rather than transient, so they are subdivided instead of retried unchanged —
+  retrying an over-large request only burns attempts. A refused tile is split one
+  H3 resolution finer (seven children, exactly conserving area) and retried, up to
+  three times.
+- A tile that fails permanently is reported with its id, not swallowed.
+
+### H3
+
+- Tiles are real H3 cells when the `h3` package is installed, and every extracted
+  row carries `h3_index` and `tile_resolution`, so output joins against anything
+  else keyed by H3 — including `h3-js` on the web side.
+- `h3` is a compiled extension that QGIS does not bundle, so it is **optional**.
+  Without it the plugin tiles with an equivalent latitude/longitude grid, which
+  covers the area just as exactly, and says plainly that the ids are not real H3
+  indexes. Nothing is ever installed automatically — the 2020 version pip-installed
+  BeautifulSoup behind the user's back, which is exactly what not to do.
+- Both the 4.x (`geo_to_cells`) and 3.x (`polyfill`) APIs are supported, and the
+  hardcoded area table is verified against the live library by a test.
+
+### Fixed along the way
+
+- **A small area could silently extract nothing.** H3 selects cells by *centre*
+  containment, so an area smaller than one cell yields zero cells. That read as a
+  successful run returning no data; the area itself is now used as a single tile.
+- **Durations measured as zero on Windows.** `time.monotonic()` has ~16 ms
+  granularity there, so a fast request recorded 0.0 s and poisoned the running
+  average. Durations now use `perf_counter`.
+- Refinement could have looped forever on a tile that cannot be subdivided
+  further; it now detects that and stops.
+
+### Also
+
+- Collection presets next to the search box, led by **Sentinel-5P / TROPOMI** —
+  the products this plugin was written for and still its main audience. The
+  selection is remembered; the default remains the whole catalog.
+- 546 unit tests (up from 371) and 59 QGIS smoke checks (up from 30), including a
+  full chunked run against a stubbed Earth Engine, sequential and in parallel, with
+  subdivision and permanent-failure paths.
+
 ## [1.0.0] — 2026-10-01
 
 A rewrite for modern QGIS. The 2020 implementation is preserved unchanged on the

@@ -45,12 +45,22 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
 )
 
-from ..core import dates, earthengine, export, geometry, store
+from ..core import (
+    concurrency,
+    dates,
+    earthengine,
+    export,
+    geometry,
+    hexgrid,
+    store,
+)
+from ..core import plan as plan_mod
 from ..core.catalog import Catalog, Dataset, Filters
 from ..core.request import ExtractRequest, RequestError, format_days, format_metres
 from . import details, layers, messages
+from .autoscale import AutoScaleDialog
 from .catalog_model import COLUMN_DATASET, DATASET_ROLE, DatasetTableModel
-from .tasks import CatalogRefreshTask, ExtractTask
+from .tasks import CatalogRefreshTask, ChunkedExtractTask, ExtractTask
 
 #: Named windows offered in the time tab.
 TIME_PRESETS = (
@@ -63,6 +73,20 @@ TIME_PRESETS = (
     ("Last year", ("months", 12)),
     ("Year to date", ("ytd", 0)),
 )
+
+#: One-click groups, by catalog tag.  Sentinel-5P comes first: it is what the
+#: plugin was built for and remains the common case.  The default is the whole
+#: catalog, and the last choice is remembered between sessions.
+PRESETS: tuple[tuple[str, dict], ...] = (
+    ("All datasets", {}),
+    ("Sentinel-5P / TROPOMI", {"tags": ("s5p",)}),
+    ("Air quality & atmosphere", {"tags": ("atmosphere",)}),
+    ("Climate & weather", {"tags": ("climate", "weather")}),
+    ("Elevation & land cover", {"tags": ("elevation", "landcover")}),
+)
+
+#: Where the chosen preset is remembered.
+SETTINGS_PRESET = "ee_s5p_plugin/preset"
 
 #: How long after the last keystroke the search re-runs.
 SEARCH_DEBOUNCE_MS = 200
@@ -95,6 +119,7 @@ class EarthEngineCatalogDockWidget(QDockWidget):
 
         self._build_ui()
         self._connect_signals()
+        self.restore_preset()
         self.load_catalog()
 
     # ------------------------------------------------------------------
@@ -108,6 +133,7 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         outer.setSpacing(6)
 
         outer.addLayout(self._build_search_row())
+        outer.addLayout(self._build_preset_row())
         outer.addWidget(self._build_filter_tabs())
         outer.addLayout(self._build_results_header())
         outer.addWidget(self._build_results_view(), stretch=1)
@@ -138,6 +164,24 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         self.refreshBTN.setText("↻")
         self.refreshBTN.setToolTip(self.tr("Refresh the catalog from Google"))
         row.addWidget(self.refreshBTN)
+        return row
+
+    def _build_preset_row(self) -> QHBoxLayout:
+        """One-click jumps to the collections this plugin is most used for.
+
+        The Sentinel-5P products are what the plugin was written for and remain
+        the common case, so they get a shortcut rather than needing the right
+        search term.
+        """
+        row = QHBoxLayout()
+        row.addWidget(QLabel(self.tr("Collection")))
+        self.presetCB = QComboBox()
+        self.presetCB.setToolTip(
+            self.tr("Jump to a group of related datasets, or browse everything")
+        )
+        for label, _filters in PRESETS:
+            self.presetCB.addItem(label)
+        row.addWidget(self.presetCB, stretch=1)
         return row
 
     def _build_filter_tabs(self) -> QTabWidget:
@@ -364,6 +408,7 @@ class EarthEngineCatalogDockWidget(QDockWidget):
     def _connect_signals(self) -> None:
         self.searchLE.textChanged.connect(self._search_timer.start)
         self.refreshBTN.clicked.connect(self.refresh_catalog)
+        self.presetCB.currentIndexChanged.connect(self.apply_preset)
 
         self.typeCB.currentIndexChanged.connect(self.apply_filters)
         self.providerCB.currentIndexChanged.connect(self.apply_filters)
@@ -492,6 +537,12 @@ class EarthEngineCatalogDockWidget(QDockWidget):
 
     def current_filters(self) -> Filters:
         tags = tuple(self.tagList.item(row).text() for row in range(self.tagList.count()))
+        # A preset's tags narrow the list the same way the user's own tags do, but
+        # stay out of the tag list so Clear does not silently drop the preset.
+        available = set(self.catalog.tags())
+        tags += tuple(
+            tag for tag in self.preset_filters().get("tags", ()) if tag in available
+        )
         dataset_type = self.typeCB.currentData()
         provider = self.providerCB.currentData()
         start = end = None
@@ -542,6 +593,29 @@ class EarthEngineCatalogDockWidget(QDockWidget):
                 )
                 self.resultsView.setCurrentIndex(index)
                 return
+
+    def preset_filters(self) -> dict:
+        index = self.presetCB.currentIndex()
+        return PRESETS[index][1] if 0 <= index < len(PRESETS) else {}
+
+    def apply_preset(self) -> None:
+        from qgis.PyQt.QtCore import QSettings
+
+        QSettings().setValue(SETTINGS_PRESET, self.presetCB.currentIndex())
+        self.apply_filters()
+
+    def restore_preset(self) -> None:
+        """Re-select the preset from last time, if it is still valid."""
+        from qgis.PyQt.QtCore import QSettings
+
+        try:
+            index = int(QSettings().value(SETTINGS_PRESET, 0))
+        except (TypeError, ValueError):
+            index = 0
+        if 0 <= index < self.presetCB.count():
+            self.presetCB.blockSignals(True)
+            self.presetCB.setCurrentIndex(index)
+            self.presetCB.blockSignals(False)
 
     # -- tags -----------------------------------------------------------
 
@@ -893,21 +967,13 @@ class EarthEngineCatalogDockWidget(QDockWidget):
             messages.warn(self, self.tr("Request not ready"), str(error))
             return
 
+        # Offer to tile the job rather than just refusing it.  Auto-scaling is the
+        # useful answer here: "too large" nearly always means "too large for one
+        # request", not "impossible".
         estimate = request.estimate()
-        if not estimate.fits and estimate.values:
-            suggested = estimate.suggested_resolution(request.resolution_m)
-            detail = estimate.describe()
-            if suggested:
-                detail += "\n\n" + self.tr(
-                    "A resolution of about {res} would fit."
-                ).format(res=format_metres(suggested))
-            if not messages.confirm(
-                self,
-                self.tr("This request looks too large"),
-                self.tr("Earth Engine will probably refuse it. Send it anyway?"),
-                detail,
-            ):
-                return
+        too_large = not estimate.fits and estimate.values
+        if too_large and self._offer_autoscale(dataset, request, estimate):
+            return
 
         # An area of interest is required; the dataset footprint is often global,
         # and a global request at native resolution cannot succeed.
@@ -953,6 +1019,141 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         if request.bbox:
             return earthengine.bbox_to_ee(list(request.bbox))
         raise earthengine.EarthEngineError("No area of interest is set")
+
+    # ------------------------------------------------------------------
+    # Auto-scaling a too-large request
+    # ------------------------------------------------------------------
+
+    def _area_geojson(self, request: ExtractRequest) -> dict | None:
+        """The area to tile: the user's own shape if set, else the bounding box."""
+        if self._aoi_geojson is not None:
+            return self._aoi_geojson
+        if request.bbox:
+            return geometry.ring_to_geojson(geometry.bbox_polygon(list(request.bbox)))
+        return None
+
+    def _offer_autoscale(self, dataset, request: ExtractRequest, estimate) -> bool:
+        """Ask whether to tile the job. Returns True if it was handled here."""
+        suggested = estimate.suggested_resolution(request.resolution_m)
+        detail = estimate.describe()
+        if suggested:
+            detail += "\n\n" + self.tr(
+                "Alternatively a ground resolution of about {res} would fit in "
+                "one request."
+            ).format(res=format_metres(suggested))
+
+        if not messages.confirm(
+            self,
+            self.tr("This request is too large for one call"),
+            self.tr("Split the area into tiles and fetch them one after another?"),
+            detail,
+            default_yes=True,
+        ):
+            # They declined tiling: let them send it as-is and see what happens.
+            return not messages.confirm(
+                self,
+                self.tr("Send it anyway?"),
+                self.tr("Earth Engine will probably refuse this request."),
+                detail,
+            )
+
+        area = self._area_geojson(request)
+        if area is None:
+            messages.warn(
+                self,
+                self.tr("No area to tile"),
+                self.tr("Set an area of interest on the Area tab first."),
+            )
+            return True
+
+        grid = hexgrid.grid()
+
+        def build(resolution: int | None = None):
+            return plan_mod.plan(
+                dataset,
+                area,
+                request.bands,
+                request.start,
+                request.end,
+                request.resolution_m,
+                tile_grid=grid,
+                force_tiling=True,
+                minimum_resolution=(
+                    resolution
+                    if resolution is not None
+                    else hexgrid.DEFAULT_MIN_RESOLUTION
+                ),
+                maximum_resolution=(
+                    resolution
+                    if resolution is not None
+                    else hexgrid.DEFAULT_MAX_RESOLUTION
+                ),
+            )
+
+        try:
+            extraction_plan = build()
+        except plan_mod.PlanError as error:
+            messages.warn(self, self.tr("Cannot split this request"), str(error))
+            return True
+
+        dialog = AutoScaleDialog(extraction_plan, replan=build, parent=self)
+        if dialog.exec() != dialog.DialogCode.Accepted:
+            return True
+
+        self._run_chunked(dialog.plan, dialog.workers, grid)
+        return True
+
+    def _run_chunked(self, extraction_plan, workers: int, grid) -> None:
+        task = ChunkedExtractTask(extraction_plan, workers=workers, tile_grid=grid)
+        task.completed.connect(self._on_chunked_done)
+        task.failed.connect(self._on_chunked_failed)
+        task.note.connect(lambda text: messages.push(self.iface, text, duration=6))
+        task.progressChanged.connect(self._on_progress)
+        self._chunked_plan = extraction_plan
+        self._start_task(task)
+
+        self.extractBTN.setEnabled(False)
+        self.progressBar.setRange(0, 100)
+        self.progressBar.setValue(0)
+        self.progressBar.setFormat(
+            self.tr("Extracting {count} tiles… %p%").format(
+                count=extraction_plan.tile_count
+            )
+        )
+        self.progressBar.setVisible(True)
+        messages.push(
+            self.iface,
+            self.tr(
+                "Extracting {count} tiles from {dataset} with {how}. Estimated {eta}."
+            ).format(
+                count=extraction_plan.tile_count,
+                dataset=extraction_plan.dataset_id,
+                how=concurrency.describe_workers(workers),
+                eta=concurrency.format_duration(extraction_plan.seconds(workers)),
+            ),
+            duration=8,
+        )
+
+    def _on_chunked_done(self, data, summary: str) -> None:
+        self._reset_progress()
+        plan_used = getattr(self, "_chunked_plan", None)
+        self._last_result = data
+        self._last_request = ExtractRequest(
+            dataset_id=plan_used.dataset_id,
+            dataset_type=plan_used.dataset_type,
+            bands=plan_used.bands,
+            start=plan_used.start,
+            end=plan_used.end,
+            resolution_m=plan_used.resolution_m,
+            bbox=tuple(self._aoi_bbox) if self._aoi_bbox else None,
+        )
+        messages.push_success(self.iface, summary, duration=10)
+        messages.log(f"Chunked extraction finished: {summary}")
+        self.save_last_result()
+
+    def _on_chunked_failed(self, what: str, advice: str) -> None:
+        self._reset_progress()
+        messages.error(self, self.tr("Chunked extraction failed"), what, advice)
 
     def _reset_progress(self) -> None:
         self.progressBar.setVisible(False)

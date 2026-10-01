@@ -91,6 +91,31 @@ add it to the lists there as well.
   Earth Engine or Qt does. Several comments record bugs from the 2020 version so
   they are not reintroduced — please keep that habit.
 
+## Working on auto-scale
+
+The tiling logic lives in three `core` modules, all free of Qt and `ee`:
+
+| Module | Responsibility |
+|---|---|
+| `hexgrid.py` | Cut an area into tiles. `H3Grid` when `h3` is installed, `LatLonGrid` otherwise. Also the H3 area table and resolution choice. |
+| `plan.py` | Decide *which* resolution, cost the plan, and subdivide a refused tile. |
+| `concurrency.py` | Worker policy, failure classification, backoff, the job runner. |
+
+Two things to keep in mind:
+
+1. **`h3` is optional and must stay that way.** QGIS does not bundle it. Anything
+   that only works with `h3` needs a fallback and a message saying what is
+   degraded. Tests that need the real library use the `needs_h3` skip marker; tests
+   for the fallback use the `no_h3` fixture, which forces it either way. Run both.
+2. **Never auto-install it.** `hexgrid.install_hint()` returns advice for the
+   user's platform. The 2020 version shelled out to `pip install beautifulsoup4`
+   from inside the plugin; that can break someone's QGIS and must not come back.
+
+If you change the resolution arithmetic, the test that matters is
+`test_plan.py::TestAutoScale::test_every_planned_tile_fits_within_the_limit` — it
+asserts that every tile a plan produces actually passes the size estimator, which
+is the whole promise of the feature.
+
 ## Adding a new dataset type
 
 If Google introduces a `gee:type` the plugin does not handle, the opt-in test

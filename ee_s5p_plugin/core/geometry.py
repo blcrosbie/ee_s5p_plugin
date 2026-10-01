@@ -9,6 +9,7 @@ a "radius" could silently come out transposed.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 
 EARTH_RADIUS_KM = 6371.0088  # IUGG mean radius
 
@@ -193,6 +194,33 @@ def bbox_area_km2(bbox: list[float]) -> float:
     mean_lat = math.radians((north + south) / 2.0)
     width = (east - west) * degree_km * math.cos(mean_lat)
     return abs(width * height)
+
+
+def geometries_of(geojson: object) -> list[dict]:
+    """Flatten any GeoJSON container down to a list of geometry dicts.
+
+    Features, feature collections and nested geometry collections all reduce to
+    the bare geometries inside them, so callers handle one shape instead of five.
+    """
+    if not isinstance(geojson, Mapping):
+        return []
+    kind = geojson.get("type")
+    if kind == "FeatureCollection":
+        out: list[dict] = []
+        for feature in geojson.get("features") or ():
+            if isinstance(feature, Mapping) and feature.get("geometry"):
+                out.extend(geometries_of(feature["geometry"]))
+        return out
+    if kind == "Feature":
+        return geometries_of(geojson.get("geometry"))
+    if kind == "GeometryCollection":
+        out = []
+        for inner in geojson.get("geometries") or ():
+            out.extend(geometries_of(inner))
+        return out
+    if kind:
+        return [dict(geojson)]
+    return []
 
 
 def ring_to_geojson(ring: list[tuple[float, float]]) -> dict:
