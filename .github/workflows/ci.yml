@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is what QGIS 3.22 LTR ships; 3.12 is current QGIS.
+        python: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install dev dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run tests
+        # The core and compatibility tests need no QGIS, which is the point of
+        # keeping them free of Qt imports.
+        run: python -m pytest tests -v --tb=short
+
+      - name: Validate the plugin package
+        run: python tools/package.py --validate
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements-dev.txt
+      - name: ruff check
+        run: python -m ruff check .
+      - name: ruff format --check
+        run: python -m ruff format --check .
+
+  qgis:
+    name: Load in QGIS (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Both Qt majors the plugin claims to support.
+          - image: qgis/qgis:release-3_34
+            qt: "5"
+          - image: qgis/qgis:latest
+            qt: "6"
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Report the environment
+        run: |
+          python3 -c "from qgis.core import Qgis; print('QGIS', Qgis.QGIS_VERSION)"
+          python3 -c "from qgis.PyQt.QtCore import QT_VERSION_STR; print('Qt', QT_VERSION_STR)"
+
+      - name: Import the plugin and build the dock widget
+        # xvfb gives the widgets a display to be created on.
+        run: xvfb-run -a python3 tools/smoke_test.py
+
+  package:
+    name: Build the plugin zip
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip
+          path: dist/*.zip
+          if-no-files-found: error
