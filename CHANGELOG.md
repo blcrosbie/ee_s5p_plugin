@@ -14,13 +14,15 @@ This project follows [Semantic Versioning](https://semver.org).
 ### Fixed
 
 - **Mangled Windows paths in the docs.** Instructions written through a shell
-  heredoc had `in` and `pi_audit.py` interpreted as escape sequences, leaving
-  a literal backspace and bell in README.md and CONTRIBUTING.md. The rendered text
-  read `C:\OSGeo4Win\python-qgis-ltr.bat toolspi_audit.py` -- not a command anyone
-  could run -- and two of the four occurrences had already been committed.
-  `tests/test_docs.py` now rejects stray control characters, checks that every
-  `tools/*.py` the docs name actually exists, and checks that OSGeo4W launcher
-  paths keep their `bin` segment.
+  heredoc had their backslash-b and backslash-a sequences interpreted as
+  escapes, leaving a literal backspace and bell character in README.md and
+  CONTRIBUTING.md. The rendered instruction named a launcher and a script that do
+  not exist, so it was not a command anyone could run, and two of the four
+  occurrences had already been committed.
+  `tests/test_docs.py` now rejects stray control characters in any documentation or
+  source file, checks that every `tools/*.py` the docs name actually exists, and
+  checks that OSGeo4W launcher paths keep their `bin` segment. Verified by
+  reintroducing the original corruption and watching the check fail.
 
 ### Fixed — QGIS 4 metadata
 
