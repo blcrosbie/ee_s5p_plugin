@@ -40,6 +40,9 @@ Search ──▶ Filter (type · provider · tags · time · area) ──▶ Ins
 - **Optional parallel fetching**, 1 to half your CPUs, with the predicted speed-up
   shown per choice. Rate limits are absorbed with backoff; tiles Earth Engine
   still refuses are split finer and retried.
+- **Tells you what it's doing.** A status panel reports position, records fetched,
+  throughput and a remaining-time estimate measured from actual throughput — plus a
+  Cancel button. Rate limiting says so rather than looking like a hang.
 - **Never blocks QGIS.** Catalog refreshes and extractions run as cancellable
   background tasks.
 
@@ -157,6 +160,29 @@ full speed-up without re-importing QGIS per worker or pickling `ee` objects. The
 CPU cap is kept because it is the intuitive dial, but the real ceiling is usually
 Earth Engine's rate limit, not your CPU.
 
+### Watching it run
+
+A status panel appears under the results list while anything is running:
+
+```
+Extracting                                            [####------]  26%
+Tile 143 of 545 · 28,600 records · 2.1 tiles/s · about 3 min 11 s left    [✕]
+```
+
+| State | What you see |
+|---|---|
+| Normal | position, records so far, throughput, remaining time |
+| Rate limited | `rate limited, backing off` — rather than a bar that looks stuck |
+| Tile split | `split into 7 smaller tiles`, and the denominator grows |
+| Some tiles failed | a running `2 failed` count |
+| One opaque request | a busy bar and ticking elapsed time (Earth Engine reports no progress for these) |
+| Done | `109,000 records · done in 4 min 20 s` |
+
+The remaining time is measured from actual throughput once a few tiles are in, so
+it corrects itself rather than repeating a figure guessed before the job started.
+**Cancel** is co-operative: requests already in flight still have to return, and
+the panel says `Stopping…` rather than pretending otherwise.
+
 ### When Earth Engine pushes back
 
 | Failure | Response |
@@ -221,7 +247,7 @@ snapshot would hide today's imagery.
 ```bash
 pip install -r requirements-dev.txt
 
-pytest tests              # 546 tests, no QGIS needed
+pytest tests              # 601 tests, no QGIS needed
 pytest -m network         # also hit the live Earth Engine catalog
 ruff check . && ruff format --check .
 
@@ -251,12 +277,14 @@ ee_s5p_plugin/
     hexgrid.py   H3 tiling, with a lat/lon grid fallback
     plan.py      auto-scale: choose a tiling, cost it, refine on refusal
     concurrency.py  worker policy, 429 backoff, the parallel runner
+    progress.py  job statistics and the status wording
     earthengine.py  the only module that imports `ee`
   gui/         Qt and QGIS live here
     dockwidget.py   the dock, built in code (no .ui file)
     catalog_model.py  table model over the result set
     tasks.py        QgsTask subclasses for background work
     autoscale.py    the tiling plan dialog
+    progress.py     the status panel widget
     layers.py       map layers, geometry bridging, styling
     details.py      metadata as HTML
     messages.py     message bar and dialogs

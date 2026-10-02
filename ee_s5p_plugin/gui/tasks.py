@@ -17,6 +17,7 @@ from qgis.PyQt.QtCore import pyqtSignal
 
 from ..core import earthengine, stac, store
 from ..core import plan as plan_mod
+from ..core import progress as progress_mod
 from ..core.catalog import Catalog
 from ..core.request import ExtractRequest
 
@@ -28,12 +29,17 @@ class CatalogRefreshTask(QgsTask):
     completed = pyqtSignal(object, str)
     #: ``(message,)`` on failure or cancellation.
     failed = pyqtSignal(str)
+    #: A :class:`~...core.progress.ProgressSnapshot` as a dict, for the status panel.
+    progressDetail = pyqtSignal(dict)
 
     def __init__(self, description: str = "Refreshing the Earth Engine catalog"):
         super().__init__(description, QgsTask.Flag.CanCancel)
         self._catalog: Catalog | None = None
         self._path: str = ""
         self._error: str = ""
+        self._tracker = progress_mod.ProgressTracker(
+            phase="Reading the Earth Engine catalog", unit="dataset"
+        )
 
     def run(self) -> bool:
         def progress(done: int, total: int, message: str) -> bool:
@@ -41,6 +47,14 @@ class CatalogRefreshTask(QgsTask):
                 return False
             if total:
                 self.setProgress(100.0 * done / total)
+            # The crawl reports absolute counts rather than increments, and it
+            # runs in two passes (providers, then datasets), so the totals are
+            # taken from it rather than accumulated here.
+            self._tracker.total = total
+            self._tracker.done = done
+            self._tracker.set_note(message if "provider" in message else "")
+            if self._tracker.should_emit():
+                self.progressDetail.emit(self._tracker.snapshot().to_dict())
             return True
 
         try:
@@ -167,6 +181,8 @@ class ChunkedExtractTask(QgsTask):
     failed = pyqtSignal(str, str)
     #: ``(message,)`` for the status line while the job runs.
     note = pyqtSignal(str)
+    #: A :class:`~...core.progress.ProgressSnapshot` as a dict, for the status panel.
+    progressDetail = pyqtSignal(dict)
 
     #: How many times a refused tile may be subdivided before giving up.
     MAX_REFINEMENT_DEPTH = 3
@@ -187,6 +203,24 @@ class ChunkedExtractTask(QgsTask):
         self._failures: list[str] = []
         self._done = 0
         self._total = 0
+        self._tracker = progress_mod.ProgressTracker(
+            total=extraction_plan.tile_count,
+            phase="Extracting",
+            unit="tile",
+            # Seed the remaining-time estimate from the plan, so the first
+            # seconds show something sensible rather than nothing.
+            expected_rate=progress_mod.rate_from_estimate(
+                extraction_plan.tile_count, extraction_plan.seconds(workers)
+            ),
+        )
+
+    @property
+    def tracker(self) -> progress_mod.ProgressTracker:
+        return self._tracker
+
+    def _emit_progress(self, force: bool = False) -> None:
+        if force or self._tracker.should_emit():
+            self.progressDetail.emit(self._tracker.snapshot().to_dict())
 
     # -- the unit of work -------------------------------------------------
 
@@ -204,6 +238,14 @@ class ChunkedExtractTask(QgsTask):
                 properties["tile_resolution"] = chunk.tile.resolution
             return data
         return []
+
+    @staticmethod
+    def _count(result) -> int:
+        if isinstance(result, list):
+            return len(result)
+        if isinstance(result, dict):
+            return len(result.get("features") or ())
+        return 0
 
     def _collect(self, result) -> None:
         if isinstance(result, list):
@@ -231,8 +273,22 @@ class ChunkedExtractTask(QgsTask):
             def progress(outcome, done, total):
                 overall = self._done + done
                 self.setProgress(100.0 * overall / max(self._total, overall))
+                records = 0
                 if outcome.ok:
+                    records = self._count(outcome.result)
                     self._collect(outcome.result)
+                self._tracker.total = max(self._total, overall)
+                self._tracker.advance(
+                    units=1,
+                    records=records,
+                    failures=0 if outcome.ok else 1,
+                )
+                # Reflect a shared backoff so the user sees why it slowed down,
+                # rather than watching the bar appear to stall.
+                if not outcome.ok and concurrency.is_rate_limited(outcome.error or ""):
+                    self._tracker.advance(throttles=1)
+                    self._tracker.mark_throttled(2.0)
+                self._emit_progress()
 
             report = concurrency.run_jobs(
                 pending,
@@ -290,6 +346,12 @@ class ChunkedExtractTask(QgsTask):
             )
             self._total += len(finer)
             pending = finer
+
+        # A final snapshot, so the panel settles on the completed state rather
+        # than whatever partial update happened to arrive last.
+        self._tracker.set_phase("Finished")
+        self._tracker.set_note("")
+        self._emit_progress(force=True)
 
         if not self._summary:
             self._summary = self._build_summary(seconds_per_request, rate_limit_events)

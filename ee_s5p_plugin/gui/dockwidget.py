@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import os
 
-from qgis.core import Qgis, QgsApplication
+from qgis.core import Qgis, QgsApplication, QgsTask
 from qgis.PyQt.QtCore import QDate, QItemSelectionModel, Qt, QTimer, pyqtSignal
 from qgis.PyQt.QtGui import QDoubleValidator
 from qgis.PyQt.QtWidgets import (
@@ -34,7 +34,6 @@ from qgis.PyQt.QtWidgets import (
     QLabel,
     QLineEdit,
     QListWidget,
-    QProgressBar,
     QPushButton,
     QRadioButton,
     QSizePolicy,
@@ -55,11 +54,13 @@ from ..core import (
     store,
 )
 from ..core import plan as plan_mod
+from ..core import progress as progress_mod
 from ..core.catalog import Catalog, Dataset, Filters
 from ..core.request import ExtractRequest, RequestError, format_days, format_metres
 from . import details, layers, messages
 from .autoscale import AutoScaleDialog
 from .catalog_model import COLUMN_DATASET, DATASET_ROLE, DatasetTableModel
+from .progress import ProgressPanel
 from .tasks import CatalogRefreshTask, ChunkedExtractTask, ExtractTask
 
 #: Named windows offered in the time tab.
@@ -139,11 +140,9 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         outer.addWidget(self._build_results_view(), stretch=1)
         outer.addWidget(self._build_extract_group())
 
-        self.progressBar = QProgressBar(contents)
-        self.progressBar.setRange(0, 100)
-        self.progressBar.setVisible(False)
-        self.progressBar.setTextVisible(True)
-        outer.addWidget(self.progressBar)
+        self.progressPanel = ProgressPanel(contents)
+        self.progressPanel.cancelRequested.connect(self.cancel_current_task)
+        outer.addWidget(self.progressPanel)
 
         self.setWidget(contents)
 
@@ -501,17 +500,17 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         task = CatalogRefreshTask()
         task.completed.connect(self._on_refresh_done)
         task.failed.connect(self._on_refresh_failed)
-        task.progressChanged.connect(self._on_progress)
+        task.progressDetail.connect(self.progressPanel.update_from)
         self._start_task(task)
         self.refreshBTN.setEnabled(False)
-        self.progressBar.setValue(0)
-        self.progressBar.setFormat(self.tr("Refreshing catalog… %p%"))
-        self.progressBar.setVisible(True)
+        self.progressPanel.start(
+            self.tr("Refreshing catalog"), unit="dataset", indeterminate=True
+        )
 
     def _on_refresh_done(self, catalog: Catalog, path: str) -> None:
         self.catalog = catalog
         self.refreshBTN.setEnabled(True)
-        self.progressBar.setVisible(False)
+        self.progressPanel.finish()
         self._populate_filter_options()
         self.apply_filters()
         messages.push_success(
@@ -522,14 +521,33 @@ class EarthEngineCatalogDockWidget(QDockWidget):
 
     def _on_refresh_failed(self, message: str) -> None:
         self.refreshBTN.setEnabled(True)
-        self.progressBar.setVisible(False)
+        self.progressPanel.finish()
         messages.push_error(
             self.iface,
             self.tr("Could not refresh the catalog: {error}").format(error=message),
         )
 
-    def _on_progress(self, progress: float) -> None:
-        self.progressBar.setValue(int(progress))
+    def cancel_current_task(self) -> None:
+        """Ask the running job to stop.
+
+        Cancellation is co-operative: a task checks between requests, so an
+        Earth Engine call already in flight still has to come back.  The panel
+        says so rather than appearing to hang.
+        """
+        for task in self._tasks:
+            if sip_deleted(task):
+                continue
+            if task.status() in (
+                QgsTask.TaskStatus.Running,
+                QgsTask.TaskStatus.Queued,
+                QgsTask.TaskStatus.OnHold,
+            ):
+                task.cancel()
+                messages.push(
+                    self.iface,
+                    self.tr("Stopping after the requests already in flight…"),
+                    duration=4,
+                )
 
     # ------------------------------------------------------------------
     # Filtering
@@ -1004,9 +1022,12 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         task.failed.connect(self._on_extract_failed)
         self._start_task(task)
         self.extractBTN.setEnabled(False)
-        self.progressBar.setRange(0, 0)  # indeterminate: Earth Engine gives no progress
-        self.progressBar.setFormat(self.tr("Extracting…"))
-        self.progressBar.setVisible(True)
+        # One opaque call: Earth Engine reports no progress, so show a busy bar
+        # with a ticking elapsed time rather than a percentage that never moves.
+        self.progressPanel.start(
+            self.tr("Extracting {dataset}").format(dataset=dataset.id),
+            indeterminate=True,
+        )
         messages.push(
             self.iface,
             self.tr("Extracting {dataset}…").format(dataset=dataset.id),
@@ -1108,19 +1129,19 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         task.completed.connect(self._on_chunked_done)
         task.failed.connect(self._on_chunked_failed)
         task.note.connect(lambda text: messages.push(self.iface, text, duration=6))
-        task.progressChanged.connect(self._on_progress)
+        task.progressDetail.connect(self.progressPanel.update_from)
         self._chunked_plan = extraction_plan
         self._start_task(task)
 
         self.extractBTN.setEnabled(False)
-        self.progressBar.setRange(0, 100)
-        self.progressBar.setValue(0)
-        self.progressBar.setFormat(
-            self.tr("Extracting {count} tiles… %p%").format(
-                count=extraction_plan.tile_count
-            )
+        self.progressPanel.start(
+            self.tr("Extracting"),
+            total=extraction_plan.tile_count,
+            unit="tile",
+            expected_rate=progress_mod.rate_from_estimate(
+                extraction_plan.tile_count, extraction_plan.seconds(workers)
+            ),
         )
-        self.progressBar.setVisible(True)
         messages.push(
             self.iface,
             self.tr(
@@ -1156,8 +1177,7 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         messages.error(self, self.tr("Chunked extraction failed"), what, advice)
 
     def _reset_progress(self) -> None:
-        self.progressBar.setVisible(False)
-        self.progressBar.setRange(0, 100)
+        self.progressPanel.finish()
         self.extractBTN.setEnabled(True)
 
     def _on_extract_done(self, request: ExtractRequest, data) -> None:
