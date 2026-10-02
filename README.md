@@ -258,7 +258,7 @@ python tools/package.py          # build the installable zip
 ```
 
 CI runs the tests on Python 3.9 and 3.12, with and without `h3`, and runs the
-smoke test and the API audit against QGIS 3.22, 3.44 LTR, 4.2 and master.
+smoke test and the API audit against QGIS 3.22, 3.44.15 LTR, 4.2.3 and master.
 
 On Windows, run the smoke test with a QGIS Python:
 

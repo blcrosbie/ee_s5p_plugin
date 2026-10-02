@@ -68,18 +68,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # The oldest release the metadata claims support for.
+          # The oldest release metadata.txt claims support for. Pinned, because
+          # the point of it is that it does not move.
           - image: qgis/qgis:release-3_22
-            label: "3.22 (Qt5, oldest claimed)"
-          # The current long term release.
-          - image: qgis/qgis:release-3_44
-            label: "3.44 LTR (Qt5)"
-          # QGIS 4.x, which is Qt6 only.
-          - image: qgis/qgis:release-4_2
-            label: "4.2 (Qt6)"
+            label: "3.22 (oldest claimed)"
+          # Pinned to the versions current as of this release, so a regression is
+          # attributable to our change rather than to a new QGIS.
+          - image: qgis/qgis:3.44.15
+            label: "3.44.15 LTR"
+          - image: qgis/qgis:4.2.3
+            label: "4.2.3 stable"
+          # Channel tags, which move: these tell us when a *new* QGIS breaks us.
+          # qgis/qgis does not publish release-X_Y tags past 3.36, so ltr/stable
+          # are the way to track the current releases.
+          - image: qgis/qgis:ltr
+            label: "current LTR"
+          - image: qgis/qgis:stable
+            label: "current stable"
           # Tracks master, so it breaks here before it breaks for users.
           - image: qgis/qgis:latest
-            label: "latest (Qt6)"
+            label: "master"
     container:
       image: ${{ matrix.image }}
     steps:

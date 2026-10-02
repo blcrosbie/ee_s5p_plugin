@@ -67,7 +67,8 @@ QGIS. That is where version breakage actually shows up -- a removed class, or an
 enum member that moved namespace. It cannot see methods called on instances
 (`layer.triggerRepaint()`); the smoke test covers those by driving real widgets.
 
-CI runs both across QGIS 3.22, 3.44 LTR, 4.2 and master.
+CI runs both across QGIS 3.22, 3.44.15 LTR, 4.2.3, the moving `ltr`/`stable`
+channels, and master.
 
 ### QGIS 4
 

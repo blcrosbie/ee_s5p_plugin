@@ -19,8 +19,11 @@ This project follows [Semantic Versioning](https://semver.org).
   every dotted constant read off those names, against the running QGIS. A removed
   class or an enum member that moved namespace is how a plugin breaks on a new
   release, and this reports it in one command instead of at runtime.
-- CI now runs the audit and the smoke test against **QGIS 3.22, 3.44 LTR, 4.2 and
-  master**, replacing a two-entry matrix.
+- CI now runs the audit and the smoke test against **QGIS 3.22 (oldest claimed),
+  3.44.15 LTR, 4.2.3, the moving `ltr` and `stable` channels, and master**,
+  replacing a two-entry matrix. `qgis/qgis` stopped publishing `release-X_Y` tags
+  after 3.36, so the current releases are tracked through `ltr` / `stable`; every
+  tag in the matrix was checked to exist.
 
 ### Fixed
 
