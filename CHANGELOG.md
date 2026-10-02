@@ -4,6 +4,36 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ## Unreleased
 
+### Fixed
+
+- **Extract raised a traceback when Earth Engine was not signed in.** Being able to
+  import `ee` is not the same as having a session: the Google Earth Engine plugin
+  bundles its own copy of `ee` on `sys.path`, which imports cleanly even when that
+  plugin failed inside its own `classFactory` and never initialised. The
+  availability check passed, and the first call then raised
+  `EEException: Earth Engine client library not initialized` from deep inside `ee`,
+  surfacing as a stack trace in the QGIS log.
+
+  Every path that builds an `ee` object now goes through `require_initialised()`,
+  which uses the public `ee.data.is_initialized()` (free, no round trip) and falls
+  back to a cheap server call on older versions. Constructing even an
+  `ee.Geometry` contacts the server to load API signatures, so there is no safe
+  "offline" call to let through unchecked. The new `EarthEngineNotInitialised`
+  exception is distinct from a missing install because the remedy is different, and
+  the message gives the exact sign-in sequence.
+- `explain_error()` now recognises the sign-in cases it was missing: not
+  initialised, credentials absent or unusable, no Cloud project set, and a project
+  not registered for Earth Engine -- each with what to do about it.
+
+### Verified
+
+- QGIS **3.44.15 LTR** (Qt 5.15.13, PyQt 5.15.11, Python 3.12.14): all 104 API
+  symbols resolve, 83 smoke checks pass.
+- QGIS **3.40.6** (Qt 6.8.1, PyQt 6.8.0, Python 3.12.10): same.
+
+  The one code base running on both Qt majors is now confirmed on real builds
+  rather than inferred.
+
 ### Documentation
 
 - README states plainly that **there is no compile step**, with a table of what the

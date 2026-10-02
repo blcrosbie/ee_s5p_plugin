@@ -261,6 +261,31 @@ _ERROR_HINTS = (
         "Re-read the dataset details; bands can differ between versions.",
     ),
     (
+        "not initialized",
+        "Earth Engine has not been signed in to in this QGIS session.",
+        "Sign in from the QGIS Python Console with ee.Authenticate(), then "
+        "restart QGIS. See the plugin's README for the full sequence.",
+    ),
+    (
+        "authorize access",
+        "Earth Engine has no valid credentials for this machine.",
+        "Run ee.Authenticate() in the QGIS Python Console. Credentials older "
+        "than about 2023 are in a format the current API cannot use and have to "
+        "be replaced.",
+    ),
+    (
+        "no project found",
+        "Earth Engine needs a Google Cloud project, and none is set.",
+        "Pass one to ee.Initialize(project='your-cloud-project'), or set it in "
+        "the Google Earth Engine plugin's settings.",
+    ),
+    (
+        "caller does not have permission",
+        "Your Cloud project is not registered for Earth Engine.",
+        "Register it at https://code.earthengine.google.com/register, or pick a "
+        "project that already is.",
+    ),
+    (
         "permission",
         "Your Earth Engine account cannot read this dataset.",
         "Check that your account is registered for Earth Engine and, for "

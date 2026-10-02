@@ -33,8 +33,15 @@ class FakeGeometry:
         return f"FakeGeometry({self.kind}, {self.spec!r})"
 
 
-def _make_fake_ee() -> types.ModuleType:
+def _make_fake_ee(initialised: bool = True) -> types.ModuleType:
     module = types.ModuleType("ee")
+
+    # earthengine-api exposes ee.data.is_initialized(); the plugin checks it
+    # before building any ee object, because constructing even a Geometry
+    # contacts the server to load the API signatures.
+    data = types.ModuleType("ee.data")
+    data.is_initialized = lambda: initialised
+    module.data = data
 
     class Geometry(FakeGeometry):
         def __init__(self, spec):
@@ -59,6 +66,21 @@ def _make_fake_ee() -> types.ModuleType:
 @pytest.fixture
 def fake_ee(monkeypatch):
     module = _make_fake_ee()
+    monkeypatch.setitem(sys.modules, "ee", module)
+    monkeypatch.setattr(ee_mod, "_ee", None)
+    yield module
+    monkeypatch.setattr(ee_mod, "_ee", None)
+
+
+@pytest.fixture
+def uninitialised_ee(monkeypatch):
+    """`ee` imports, but nobody ever signed in.
+
+    This is the real situation when the Earth Engine plugin fails inside its
+    classFactory: its bundled `ee` is on sys.path and imports cleanly, so an
+    import check passes and the first actual call blows up deep inside ee.
+    """
+    module = _make_fake_ee(initialised=False)
     monkeypatch.setitem(sys.modules, "ee", module)
     monkeypatch.setattr(ee_mod, "_ee", None)
     yield module
@@ -102,6 +124,64 @@ class TestAvailability:
 # ---------------------------------------------------------------------------
 # Geometry bridging
 # ---------------------------------------------------------------------------
+
+
+class TestNotSignedIn:
+    """Importable is not the same as signed in."""
+
+    def test_is_available_is_true_but_is_initialised_is_false(self, uninitialised_ee):
+        assert ee_mod.is_available() is True
+        assert ee_mod.is_initialised() is False
+
+    def test_is_initialised_is_true_when_signed_in(self, fake_ee):
+        assert ee_mod.is_initialised() is True
+
+    @pytest.mark.parametrize(
+        "call",
+        [
+            lambda: ee_mod.bbox_to_ee([0, 0, 1, 1]),
+            lambda: ee_mod.ring_to_ee([(0, 0), (1, 0), (1, 1)]),
+            lambda: ee_mod.geojson_to_ee(POLYGON),
+        ],
+        ids=["bbox_to_ee", "ring_to_ee", "geojson_to_ee"],
+    )
+    def test_building_geometry_is_refused_with_advice(self, uninitialised_ee, call):
+        """v1.0.2 let ee's own exception escape as a traceback in the QGIS log."""
+        with pytest.raises(ee_mod.EarthEngineNotInitialised) as caught:
+            call()
+        message = str(caught.value)
+        assert "ee.Authenticate()" in message
+        assert "Python Console" in message
+
+    def test_the_advice_names_a_cloud_project(self, uninitialised_ee):
+        assert "project=" in ee_mod.NOT_INITIALISED_ADVICE
+
+    def test_it_is_distinguishable_from_a_missing_install(self):
+        """Different remedy, so it must be catchable separately."""
+        assert issubclass(ee_mod.EarthEngineNotInitialised, ee_mod.EarthEngineUnavailable)
+        assert ee_mod.EarthEngineNotInitialised is not ee_mod.EarthEngineUnavailable
+
+    def test_older_ee_without_the_predicate_falls_back(self, monkeypatch):
+        """earthengine-api before 1.x has no ee.data.is_initialized."""
+        module = _make_fake_ee()
+        del module.data.is_initialized
+
+        calls = []
+
+        class Number:
+            def __init__(self, value):
+                self.value = value
+
+            def getInfo(self):
+                calls.append(self.value)
+                return self.value
+
+        module.Number = Number
+        monkeypatch.setitem(sys.modules, "ee", module)
+        monkeypatch.setattr(ee_mod, "_ee", None)
+        assert ee_mod.is_initialised() is True
+        assert calls, "should have fallen back to a server round trip"
+        monkeypatch.setattr(ee_mod, "_ee", None)
 
 
 class TestGeometryBridging:

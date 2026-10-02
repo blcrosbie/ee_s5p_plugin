@@ -985,6 +985,19 @@ class EarthEngineCatalogDockWidget(QDockWidget):
             )
             return
 
+        # Importable is not the same as signed in. The Earth Engine plugin bundles
+        # its own copy of `ee`, which imports fine even when that plugin failed to
+        # initialise -- and then the first call raises deep inside ee. Checking
+        # here turns that into one clear message.
+        if not earthengine.is_initialised():
+            messages.error(
+                self,
+                self.tr("Earth Engine is not signed in"),
+                self.tr("No Earth Engine session is available."),
+                earthengine.NOT_INITIALISED_ADVICE,
+            )
+            return
+
         try:
             request = self.build_request()
         except (RequestError, ValueError) as error:
@@ -1019,6 +1032,9 @@ class EarthEngineCatalogDockWidget(QDockWidget):
 
         try:
             request.region = self._build_region(request)
+        except earthengine.EarthEngineNotInitialised as error:
+            messages.error(self, self.tr("Earth Engine is not signed in"), str(error))
+            return
         except earthengine.EarthEngineError as error:
             messages.error(self, self.tr("Cannot build the area of interest"), str(error))
             return

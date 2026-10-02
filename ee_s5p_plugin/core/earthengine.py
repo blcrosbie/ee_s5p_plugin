@@ -30,6 +30,35 @@ class EarthEngineError(RuntimeError):
     """A request reached Earth Engine and was rejected."""
 
 
+class EarthEngineNotInitialised(EarthEngineUnavailable):
+    """``ee`` imported, but ``ee.Initialize`` never succeeded.
+
+    Its own subclass because the remedy is completely different from a missing
+    install: the dependency is present, it just has no usable credentials.
+    """
+
+
+#: What to tell the user when Earth Engine was never initialised.  The Earth
+#: Engine plugin cannot offer its own sign-in command in this state, because it
+#: fails inside ``classFactory`` and so never finishes loading.
+NOT_INITIALISED_ADVICE = """\
+Earth Engine has not been signed in to in this QGIS session.
+
+The 'Google Earth Engine' plugin signs in at start-up. If that failed it never \
+finished loading, so its own sign-in command is unavailable too.
+
+Sign in from the QGIS Python Console (Plugins > Python Console):
+
+    import ee
+    ee.Authenticate()
+    ee.Initialize(project='your-cloud-project')
+
+A browser will open. If nothing happens, use
+ee.Authenticate(auth_mode='notebook'), which prints a URL to paste instead.
+
+Then restart QGIS so the Earth Engine plugin loads cleanly."""
+
+
 _ee = None
 
 
@@ -62,14 +91,27 @@ def is_initialised() -> bool:
     """Has ``ee.Initialize`` already succeeded in this session?
 
     The "Google Earth Engine" plugin normally does this at QGIS start-up, so in
-    practice we are just checking whether it got that far.
+    practice this asks whether it got that far.  Importing ``ee`` is *not* enough:
+    the module imports fine from that plugin's bundled copy even when its
+    ``classFactory`` blew up before initialising, and then the first ``ee`` call
+    raises "Earth Engine client library not initialized".
+
+    Uses ``ee.data.is_initialized()`` where it exists (earthengine-api 1.x), which
+    costs nothing, and falls back to a cheap server round trip on older versions.
     """
     try:
         ee = require_ee()
     except EarthEngineUnavailable:
         return False
+
+    probe = getattr(ee.data, "is_initialized", None)
+    if probe is not None:
+        try:
+            return bool(probe() if callable(probe) else probe)
+        except Exception:
+            return False
     try:
-        # Cheap server round trip that only works on an initialised session.
+        # Older ee: no predicate, so ask the server something trivial.
         ee.Number(1).getInfo()
     except Exception:
         return False
@@ -105,24 +147,40 @@ def initialise(project: str | None = None) -> None:
 # ---------------------------------------------------------------------------
 
 
+def require_initialised():
+    """Return ``ee``, or raise :class:`EarthEngineNotInitialised`.
+
+    Every path that builds an ``ee`` object goes through here.  Constructing even
+    an ``ee.Geometry`` contacts the server to load the API signatures, so there is
+    no such thing as a safe "offline" ee call to let through unchecked.
+    """
+    ee = require_ee()
+    if not is_initialised():
+        raise EarthEngineNotInitialised(NOT_INITIALISED_ADVICE)
+    return ee
+
+
 def ring_to_ee(ring: Sequence[Sequence[float]]):
     """A ``(lon, lat)`` ring -> ``ee.Geometry.Polygon``."""
-    ee = require_ee()
+    ee = require_initialised()
     coordinates = [[float(x), float(y)] for x, y in ring]
     if coordinates and coordinates[0] != coordinates[-1]:
         coordinates.append(coordinates[0])
     if len(coordinates) < 4:
         raise EarthEngineError("A polygon needs at least three distinct corners")
-    return ee.Geometry.Polygon([coordinates])
+    return _wrap(lambda: ee.Geometry.Polygon([coordinates]), "Building a polygon")
 
 
 def bbox_to_ee(bbox: Sequence[float]):
     """``[west, south, east, north]`` -> ``ee.Geometry.Rectangle``."""
-    ee = require_ee()
+    ee = require_initialised()
     if not bbox or len(bbox) < 4:
         raise EarthEngineError(f"Expected [west, south, east, north], got {bbox!r}")
     west, south, east, north = (float(v) for v in bbox[:4])
-    return ee.Geometry.Rectangle([west, south, east, north])
+    return _wrap(
+        lambda: ee.Geometry.Rectangle([west, south, east, north]),
+        "Building a rectangle",
+    )
 
 
 def geojson_to_ee(geojson: Mapping):
@@ -133,7 +191,7 @@ def geojson_to_ee(geojson: Mapping):
     purely on the GeoJSON, so building an area of interest costs no server calls;
     anything non-polygonal falls back to a ``GeometryCollection``.
     """
-    ee = require_ee()
+    ee = require_initialised()
     if not isinstance(geojson, Mapping):
         raise EarthEngineError("Expected a GeoJSON mapping")
 
@@ -179,7 +237,7 @@ def describe(dataset_id: str, dataset_type: str) -> dict:
     that cannot be defeated by a dataset whose first image sits outside the
     window the GUI happens to be showing.
     """
-    ee = require_ee()
+    ee = require_initialised()
     if dataset_type == "Image":
         return _wrap(lambda: ee.Image(dataset_id).getInfo(), f"Reading {dataset_id}")
     if dataset_type == "ImageCollection":
@@ -252,7 +310,7 @@ def footprint_bbox(info: Mapping) -> list[float] | None:
 
 def count_images(request: ExtractRequest) -> int:
     """How many images the filters actually select, server-side."""
-    ee = require_ee()
+    ee = require_initialised()
     if request.dataset_type != "ImageCollection":
         return 1
     collection = ee.ImageCollection(request.dataset_id).filterDate(
@@ -265,7 +323,7 @@ def count_images(request: ExtractRequest) -> int:
 
 def extract(request: ExtractRequest) -> list[dict] | dict:
     """Run ``request`` and return rows (rasters) or GeoJSON (tables)."""
-    ee = require_ee()
+    ee = require_initialised()
 
     if request.dataset_type == "FeatureCollection":
         collection = ee.FeatureCollection(request.dataset_id)
