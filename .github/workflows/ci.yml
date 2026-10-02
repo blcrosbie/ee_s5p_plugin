@@ -62,17 +62,24 @@ jobs:
         run: python -m ruff format --check .
 
   qgis:
-    name: Load in QGIS (${{ matrix.image }})
+    name: QGIS ${{ matrix.label }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Both Qt majors the plugin claims to support.
-          - image: qgis/qgis:release-3_34
-            qt: "5"
+          # The oldest release the metadata claims support for.
+          - image: qgis/qgis:release-3_22
+            label: "3.22 (Qt5, oldest claimed)"
+          # The current long term release.
+          - image: qgis/qgis:release-3_44
+            label: "3.44 LTR (Qt5)"
+          # QGIS 4.x, which is Qt6 only.
+          - image: qgis/qgis:release-4_2
+            label: "4.2 (Qt6)"
+          # Tracks master, so it breaks here before it breaks for users.
           - image: qgis/qgis:latest
-            qt: "6"
+            label: "latest (Qt6)"
     container:
       image: ${{ matrix.image }}
     steps:
@@ -81,9 +88,15 @@ jobs:
       - name: Report the environment
         run: |
           python3 -c "from qgis.core import Qgis; print('QGIS', Qgis.QGIS_VERSION)"
-          python3 -c "from qgis.PyQt.QtCore import QT_VERSION_STR; print('Qt', QT_VERSION_STR)"
+          python3 -c "from qgis.PyQt.QtCore import QT_VERSION_STR, PYQT_VERSION_STR; print('Qt', QT_VERSION_STR, 'PyQt', PYQT_VERSION_STR)"
+          python3 --version
 
-      - name: Import the plugin and build the dock widget
+      - name: Audit every QGIS and Qt symbol the plugin uses
+        # Catches an API that was removed or an enum that moved, which is the
+        # usual way a plugin breaks on a new QGIS.
+        run: python3 tools/api_audit.py
+
+      - name: Import the plugin and drive the dock widget
         # xvfb gives the widgets a display to be created on.
         run: xvfb-run -a python3 tools/smoke_test.py
 

@@ -67,7 +67,7 @@ Download `ee_s5p_plugin-<version>.zip` from the [releases page][releases], then
 
 | | |
 |---|---|
-| QGIS | 3.22 or newer, including 4.x — works on both Qt 5 and Qt 6 builds |
+| QGIS | 3.22 or newer, **including 4.x** — one code base for both Qt 5 and Qt 6 |
 | For browsing | nothing beyond QGIS |
 | For extracting | the [**Google Earth Engine**][ee-plugin] plugin, which provides the `ee` Python API and handles authentication |
 | For real H3 indexes | the optional [`h3`][h3] package — without it, tiling falls back to an equivalent lat/lon grid |
@@ -251,10 +251,14 @@ pytest tests              # 601 tests, no QGIS needed
 pytest -m network         # also hit the live Earth Engine catalog
 ruff check . && ruff format --check .
 
-python tools/smoke_test.py       # load the plugin in a real QGIS
+python tools/smoke_test.py       # load the plugin in a real QGIS and drive the dock
+python tools/api_audit.py        # check every QGIS/Qt symbol exists on this build
 python tools/refresh_catalog.py  # regenerate the bundled snapshot
 python tools/package.py          # build the installable zip
 ```
+
+CI runs the tests on Python 3.9 and 3.12, with and without `h3`, and runs the
+smoke test and the API audit against QGIS 3.22, 3.44 LTR, 4.2 and master.
 
 On Windows, run the smoke test with a QGIS Python:
 

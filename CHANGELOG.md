@@ -2,6 +2,37 @@
 
 This project follows [Semantic Versioning](https://semver.org).
 
+## Unreleased
+
+### Fixed — QGIS 4 metadata
+
+- **Removed `supportsQt6=True`.** It has been removed from QGIS core and is no
+  longer recognised; plugins relying on it alone were dropped from the QGIS 4 list.
+  `qgisMaximumVersion=4.99` is what puts a 3.x-floor plugin in the **QGIS 4 Ready**
+  list, and that was already set. `tools/package.py` previously *required* the flag
+  and now rejects it, and a test asserts it stays absent.
+  ([official guide](https://plugins.qgis.org/docs/migrate-qgis4))
+
+### Added — verifying against a new QGIS
+
+- `tools/api_audit.py` resolves every name the plugin imports from `qgis.*`, and
+  every dotted constant read off those names, against the running QGIS. A removed
+  class or an enum member that moved namespace is how a plugin breaks on a new
+  release, and this reports it in one command instead of at runtime.
+- CI now runs the audit and the smoke test against **QGIS 3.22, 3.44 LTR, 4.2 and
+  master**, replacing a two-entry matrix.
+
+### Fixed
+
+- **Finished tasks were never released.** `_tasks` was pruned with
+  `sip.isdeleted()`, but `qgis.PyQt.sip` is not importable on every build and the
+  guard silently returned False there, so the list grew for the session and
+  `cancel_current_task` could call `.status()` on a destroyed object. Tasks are now
+  dropped on `taskCompleted` / `taskTerminated`, with no sip dependency at all, and
+  the cancel loop tolerates a task Qt has already destroyed. Found by the new audit.
+- The test import hook defined `find_module` / `load_module`, removed from
+  `importlib` in Python 3.12.
+
 ## [1.0.2] — 2026-10-01
 
 Live progress feedback, for the heavy downloads the previous release made possible.

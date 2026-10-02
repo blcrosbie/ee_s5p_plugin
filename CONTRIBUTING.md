@@ -45,6 +45,41 @@ python tools/smoke_test.py     # load in a real QGIS (needs a QGIS Python)
 when you touch `core/stac.py` — it is what notices Google changing the catalog's
 shape.
 
+## Verifying on a new QGIS
+
+Two tools, neither of which needs the plugin installed into a profile:
+
+```bash
+python3 tools/api_audit.py    # does every QGIS/Qt symbol still exist here?
+python3 tools/smoke_test.py   # does the plugin load and does the dock work?
+```
+
+Run both against the QGIS you care about. On Windows with OSGeo4W:
+
+```
+C:\OSGeo4Win\python-qgis-ltr.bat toolspi_audit.py
+C:\OSGeo4Win\python-qgis-ltr.bat tools\smoke_test.py
+```
+
+`api_audit.py` parses the sources for every name imported from `qgis.*` and every
+dotted constant read off those names, then resolves each one against the running
+QGIS. That is where version breakage actually shows up -- a removed class, or an
+enum member that moved namespace. It cannot see methods called on instances
+(`layer.triggerRepaint()`); the smoke test covers those by driving real widgets.
+
+CI runs both across QGIS 3.22, 3.44 LTR, 4.2 and master.
+
+### QGIS 4
+
+QGIS 4 is the Qt6 transition, and it kept deprecated APIs where it could, so the
+rules in the next section are the whole story for this plugin. Two metadata facts,
+from [the official guide](https://plugins.qgis.org/docs/migrate-qgis4):
+
+- `qgisMaximumVersion=4.99` is what puts a 3.x-floor plugin in the **QGIS 4 Ready**
+  list. Without it the plugin is hidden from QGIS 4 users.
+- `supportsQt6` has been **removed** from QGIS and is no longer recognised. Do not
+  add it back; a test asserts it is absent.
+
 ## The two rules that matter
 
 ### 1. `core` must not import Qt, QGIS or `ee` at module level

@@ -264,6 +264,40 @@ def _at_module_level(tree: ast.Module, target: ast.AST) -> bool:
     return any(node is target for node in tree.body)
 
 
+def _metadata() -> dict:
+    import configparser
+
+    parser = configparser.ConfigParser(interpolation=None)
+    parser.optionxform = str
+    parser.read(os.path.join(PLUGIN_DIR, "metadata.txt"), encoding="utf-8")
+    return dict(parser.items("general"))
+
+
+class TestMetadataTargetsQgis4:
+    """plugins.qgis.org decides QGIS 4 readiness from the version range.
+
+    See https://plugins.qgis.org/docs/migrate-qgis4 -- a plugin is listed as QGIS 4
+    ready when qgisMinimumVersion >= 4.0 or qgisMaximumVersion >= 4.0.
+    """
+
+    def test_the_version_ceiling_reaches_qgis_4(self):
+        metadata = _metadata()
+        minimum = metadata.get("qgisMinimumVersion", "")
+        maximum = metadata.get("qgisMaximumVersion", "")
+        assert maximum.startswith("4") or minimum.startswith("4"), (
+            f"qgisMinimumVersion={minimum} qgisMaximumVersion={maximum} would keep "
+            "this plugin out of the QGIS 4 Ready list"
+        )
+
+    def test_supports_qt6_is_absent(self):
+        """It was removed from QGIS core and is no longer recognised.
+
+        Plugins that relied on it alone were dropped from the QGIS 4 list, so
+        carrying it is at best dead weight.
+        """
+        assert "supportsQt6" not in _metadata()
+
+
 def test_no_bare_except_clauses():
     """``except:`` swallows KeyboardInterrupt and hides real bugs.
 

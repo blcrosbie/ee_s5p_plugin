@@ -123,13 +123,22 @@ def validate() -> dict[str, str]:
     if not re.fullmatch(r"\d+\.\d+(\.\d+)?", version):
         problems.append(f"version {version!r} should look like 1.0.0")
 
-    # A plugin that does not declare a Qt6 maximum is hidden from QGIS 4 users.
-    if metadata.get("supportsQt6", "").strip().lower() not in ("true", "yes", "1"):
-        problems.append("metadata.txt: supportsQt6=True is required for QGIS 4")
+    # plugins.qgis.org lists a plugin as QGIS 4 ready when qgisMinimumVersion >= 4.0
+    # or qgisMaximumVersion >= 4.0, so a 3.x floor needs the 4.x ceiling spelled out.
+    # https://plugins.qgis.org/docs/migrate-qgis4
     maximum = metadata.get("qgisMaximumVersion", "").strip()
-    if maximum and not maximum.startswith("4"):
+    minimum = metadata.get("qgisMinimumVersion", "").strip()
+    if not (maximum.startswith("4") or minimum.startswith("4")):
         problems.append(
-            f"metadata.txt: qgisMaximumVersion={maximum} excludes QGIS 4; use 4.99"
+            f"metadata.txt: qgisMaximumVersion={maximum or '(unset)'} keeps this "
+            f"plugin out of the QGIS 4 Ready list; use 4.99"
+        )
+    # supportsQt6 was removed from QGIS core and is no longer recognised; plugins
+    # that relied on it alone were dropped from the QGIS 4 list.
+    if "supportsQt6" in metadata:
+        problems.append(
+            "metadata.txt: supportsQt6 was removed from QGIS and is ignored; "
+            "delete it and rely on qgisMaximumVersion=4.99"
         )
 
     for relative in REQUIRED_FILES:

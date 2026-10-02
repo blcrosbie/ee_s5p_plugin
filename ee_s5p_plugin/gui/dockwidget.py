@@ -13,6 +13,7 @@ This class stays deliberately thin: filtering lives in
 
 from __future__ import annotations
 
+import contextlib
 import os
 
 from qgis.core import Qgis, QgsApplication, QgsTask
@@ -534,20 +535,25 @@ class EarthEngineCatalogDockWidget(QDockWidget):
         Earth Engine call already in flight still has to come back.  The panel
         says so rather than appearing to hang.
         """
-        for task in self._tasks:
-            if sip_deleted(task):
-                continue
-            if task.status() in (
-                QgsTask.TaskStatus.Running,
-                QgsTask.TaskStatus.Queued,
-                QgsTask.TaskStatus.OnHold,
-            ):
+        live = (
+            QgsTask.TaskStatus.Running,
+            QgsTask.TaskStatus.Queued,
+            QgsTask.TaskStatus.OnHold,
+        )
+        for task in list(self._tasks):
+            try:
+                if task.status() not in live:
+                    continue
                 task.cancel()
-                messages.push(
-                    self.iface,
-                    self.tr("Stopping after the requests already in flight…"),
-                    duration=4,
-                )
+            except RuntimeError:
+                # Qt destroyed the task between the signal and this call.
+                self._forget_task(task)
+                continue
+            messages.push(
+                self.iface,
+                self.tr("Stopping after the requests already in flight…"),
+                duration=4,
+            )
 
     # ------------------------------------------------------------------
     # Filtering
@@ -1327,24 +1333,25 @@ class EarthEngineCatalogDockWidget(QDockWidget):
     # ------------------------------------------------------------------
 
     def _start_task(self, task) -> None:
-        """Hand a task to QGIS, keeping a reference so it is not collected."""
-        self._tasks = [t for t in self._tasks if not sip_deleted(t)]
+        """Hand a task to QGIS, keeping a reference so it is not collected.
+
+        The reference is dropped when the task reports that it has ended, rather
+        than by asking sip whether the C++ object is still alive: ``qgis.PyQt.sip``
+        is not available on every build, and a list of possibly-dead objects is a
+        RuntimeError waiting to happen the next time anything iterates it.
+        """
         self._tasks.append(task)
+        task.taskCompleted.connect(lambda t=task: self._forget_task(t))
+        task.taskTerminated.connect(lambda t=task: self._forget_task(t))
         QgsApplication.taskManager().addTask(task)
+
+    def _forget_task(self, task) -> None:
+        # Both taskCompleted and taskTerminated may fire, so a second removal is
+        # expected rather than exceptional.
+        with contextlib.suppress(ValueError):
+            self._tasks.remove(task)
 
     def closeEvent(self, event) -> None:
         self._search_timer.stop()
         self.closingPlugin.emit()
         event.accept()
-
-
-def sip_deleted(obj) -> bool:
-    """Has Qt already destroyed this object?"""
-    try:
-        from qgis.PyQt import sip
-    except ImportError:
-        return False
-    try:
-        return sip.isdeleted(obj)
-    except (TypeError, RuntimeError):
-        return False

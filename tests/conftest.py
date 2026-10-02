@@ -25,16 +25,12 @@ if PLUGIN_DIR not in sys.path:
 class _BlockH3:
     """Import hook that makes ``import h3`` raise ImportError."""
 
-    def find_module(self, fullname, path=None):  # legacy API, harmless
-        return self if fullname == "h3" or fullname.startswith("h3.") else None
-
+    # find_module/load_module were removed from importlib in Python 3.12; only
+    # find_spec is needed, and defining the others would just be misleading.
     def find_spec(self, fullname, path=None, target=None):
         if fullname == "h3" or fullname.startswith("h3."):
             raise ImportError(f"No module named {fullname!r} (blocked by the tests)")
         return
-
-    def load_module(self, fullname):
-        raise ImportError(f"No module named {fullname!r} (blocked by the tests)")
 
 
 if os.environ.get("EE_PLUGIN_NO_H3"):

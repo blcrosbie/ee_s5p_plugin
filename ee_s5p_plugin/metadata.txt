@@ -2,7 +2,6 @@
 name=Earth Engine Catalog Query
 qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
-supportsQt6=True
 description=Search the Google Earth Engine Data Catalog from QGIS -- Sentinel-5P and 1,100+ other datasets -- filter it, then extract data onto the map, auto-scaling large areas into H3 tiles.
 version=1.0.2
 author=Brandon Crosbie
