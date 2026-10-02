@@ -58,10 +58,114 @@ Image collections, single images and feature collections are all supported.
 
 ### From a zip
 
-Download `ee_s5p_plugin-<version>.zip` from the [releases page][releases], then
-*Plugins → Manage and Install Plugins → Install from ZIP*.
+Download `ee_s5p_plugin-<version>.zip` from the [releases page][releases], then in
+QGIS: *Plugins → Manage and Install Plugins… → **Install from ZIP*** → pick the
+file → **Install Plugin**.
 
 [releases]: https://github.com/blcrosbie/ee_s5p_plugin/releases
+
+### Building the zip yourself
+
+From a clone of this repository:
+
+```bash
+python tools/package.py
+```
+
+That writes `dist/ee_s5p_plugin-<version>.zip` and prints the file count, size and
+version. Then install it with *Install from ZIP* as above.
+
+**Don't zip the repository by hand.** QGIS requires the archive to contain exactly
+one top-level directory holding `metadata.txt`, and zipping the checkout would put
+`tests/`, `tools/` and `pyproject.toml` in there alongside it — at which point QGIS
+either rejects it or installs something that cannot load. `tools/package.py` builds
+the right shape and refuses to build a broken one: it checks the required metadata
+fields, that `metadata.txt` and `__init__.py` agree on the version, that the
+bundled catalog is present and not a stub, and that the result is under the
+25 MiB limit.
+
+To check without building:
+
+```bash
+python tools/package.py --validate
+```
+
+<details>
+<summary>What ends up in the zip</summary>
+
+```
+ee_s5p_plugin/
+├── metadata.txt            what QGIS reads to list the plugin
+├── __init__.py             classFactory, the entry point QGIS calls
+├── plugin.py               menu, toolbar, dock lifecycle
+├── icon.png
+├── LICENSE
+├── core/                   no Qt, no QGIS, no ee
+├── gui/                    the dock, dialogs, background tasks
+└── data/
+    └── gee_catalog.json.gz the bundled dataset list (~800 KiB)
+```
+
+Tests, tooling and CI config are deliberately excluded — they are not needed at
+runtime and would only inflate the download.
+</details>
+
+### Installing from a folder instead (for development)
+
+Skipping the zip and symlinking the package into your QGIS profile means your edits
+are live — no rebuild, no reinstall. Find the right folder from inside QGIS via
+*Settings → User Profiles → **Open Active Profile Folder***, which is correct on
+every version and platform, then use its `python/plugins` subfolder.
+
+```powershell
+# Windows, in an elevated PowerShell, from the repository root
+New-Item -ItemType SymbolicLink `
+  -Path "$env:APPDATA\QGIS\QGIS3\profiles\default\python\plugins\ee_s5p_plugin" `
+  -Target "$PWD\ee_s5p_plugin"
+```
+
+```bash
+# Linux
+PROFILE=~/.local/share/QGIS/QGIS3/profiles/default
+ln -s "$PWD/ee_s5p_plugin" "$PROFILE/python/plugins/ee_s5p_plugin"
+
+# macOS
+PROFILE=~/"Library/Application Support/QGIS/QGIS3/profiles/default"
+ln -s "$PWD/ee_s5p_plugin" "$PROFILE/python/plugins/ee_s5p_plugin"
+```
+
+Copying the `ee_s5p_plugin/` folder there works too, but then you have to re-copy
+after every change.
+
+### Turning it on, and finding it
+
+*Plugins → Manage and Install Plugins… → **Installed*** → tick **Earth Engine
+Catalog Query**. *Install from ZIP* usually enables it for you.
+
+It then appears as a toolbar button, and under *Plugins → Earth Engine Catalog*.
+The button toggles a dock panel on the right.
+
+### If it doesn't show up
+
+| Symptom | Cause |
+|---|---|
+| Not in the **Installed** list at all | The zip had the wrong shape, or the folder name does not match the package. Rebuild with `tools/package.py`. |
+| Listed but will not enable | Something raised on import. *Plugins → Python Console* shows the traceback, as does the *Log Messages* panel. |
+| Visible but **Extract** complains about Earth Engine | Expected — install the [Google Earth Engine][ee-plugin] plugin. Browsing the catalog works without it. |
+| Installed after a previous version | Restart QGIS, or use [Plugin Reloader][reloader] to reload it in place. |
+
+[reloader]: https://plugins.qgis.org/plugins/plugin_reloader/
+
+Before installing into a QGIS you have not tried before, these two answer "will it
+even work here" without touching your profile:
+
+```bash
+python tools/api_audit.py    # does every QGIS/Qt symbol this plugin uses exist?
+python tools/smoke_test.py   # does it load, and does the dock actually work?
+```
+
+Both need a QGIS Python. On Windows with OSGeo4W that is
+`C:\OSGeo4W\bin\python-qgis-ltr.bat tools\api_audit.py`.
 
 ### Requirements
 
@@ -208,7 +312,7 @@ Nothing is installed automatically. The dialog shows the right command for your
 platform; on OSGeo4W that is:
 
 ```
-C:\OSGeo4Win\python-qgis-ltr.bat -m pip install h3
+C:\OSGeo4W\bin\python-qgis-ltr.bat -m pip install h3
 ```
 
 ## How it finds datasets

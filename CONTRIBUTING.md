@@ -57,8 +57,8 @@ python3 tools/smoke_test.py   # does the plugin load and does the dock work?
 Run both against the QGIS you care about. On Windows with OSGeo4W:
 
 ```
-C:\OSGeo4Win\python-qgis-ltr.bat toolspi_audit.py
-C:\OSGeo4Win\python-qgis-ltr.bat tools\smoke_test.py
+C:\OSGeo4W\bin\python-qgis-ltr.bat tools\api_audit.py
+C:\OSGeo4W\bin\python-qgis-ltr.bat tools\smoke_test.py
 ```
 
 `api_audit.py` parses the sources for every name imported from `qgis.*` and every

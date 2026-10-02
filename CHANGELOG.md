@@ -4,6 +4,24 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ## Unreleased
 
+### Documentation
+
+- README now covers building the zip and installing it as a custom plugin:
+  `tools/package.py`, *Install from ZIP*, what ends up in the archive and why
+  hand-zipping the checkout does not work, the symlink-into-your-profile route for
+  development, how to enable and find the plugin, and a troubleshooting table.
+
+### Fixed
+
+- **Mangled Windows paths in the docs.** Instructions written through a shell
+  heredoc had `in` and `pi_audit.py` interpreted as escape sequences, leaving
+  a literal backspace and bell in README.md and CONTRIBUTING.md. The rendered text
+  read `C:\OSGeo4Win\python-qgis-ltr.bat toolspi_audit.py` -- not a command anyone
+  could run -- and two of the four occurrences had already been committed.
+  `tests/test_docs.py` now rejects stray control characters, checks that every
+  `tools/*.py` the docs name actually exists, and checks that OSGeo4W launcher
+  paths keep their `bin` segment.
+
 ### Fixed — QGIS 4 metadata
 
 - **Removed `supportsQt6=True`.** It has been removed from QGIS core and is no
