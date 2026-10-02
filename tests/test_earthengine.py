@@ -153,8 +153,26 @@ class TestNotSignedIn:
         assert "ee.Authenticate()" in message
         assert "Python Console" in message
 
-    def test_the_advice_names_a_cloud_project(self, uninitialised_ee):
-        assert "project=" in ee_mod.NOT_INITIALISED_ADVICE
+    def test_the_advice_warns_the_project_will_be_asked_for_again(self):
+        """ee.Authenticate() rewrites the credentials file from scratch.
+
+        The Earth Engine plugin stores the Cloud project id in that same file, so
+        authenticating silently clears it. Advice that did not say so would send
+        people straight into the next failure.
+        """
+        advice = ee_mod.NOT_INITIALISED_ADVICE
+        assert "Cloud" in advice and "project" in advice
+        assert "restart qgis" in advice.lower()
+
+    def test_the_advice_is_actionable(self):
+        advice = ee_mod.NOT_INITIALISED_ADVICE
+        for fragment in (
+            "ee.Authenticate()",
+            "Python Console",
+            "auth_mode='notebook'",
+            "credentials",
+        ):
+            assert fragment in advice, f"advice no longer mentions {fragment!r}"
 
     def test_it_is_distinguishable_from_a_missing_install(self):
         """Different remedy, so it must be catchable separately."""

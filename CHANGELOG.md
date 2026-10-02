@@ -21,6 +21,13 @@ This project follows [Semantic Versioning](https://semver.org).
   "offline" call to let through unchecked. The new `EarthEngineNotInitialised`
   exception is distinct from a missing install because the remedy is different, and
   the message gives the exact sign-in sequence.
+- **The sign-in advice no longer walks the user into the next failure.** The Earth
+  Engine plugin stores the Cloud project id *inside the credentials file*
+  (`ee.oauth.get_credentials_path()`), and `ee.Authenticate()` rewrites that file
+  from scratch rather than merging -- `write_private_json` removes it and writes a
+  fresh dict -- so authenticating silently clears the project. The message now says
+  to expect being asked for it again after restarting, where to find it, and that
+  it has to be registered for Earth Engine. Same note added to the README.
 - `explain_error()` now recognises the sign-in cases it was missing: not
   initialised, credentials absent or unusable, no Cloud project set, and a project
   not registered for Earth Engine -- each with what to do about it.

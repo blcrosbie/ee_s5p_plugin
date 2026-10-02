@@ -51,12 +51,18 @@ Sign in from the QGIS Python Console (Plugins > Python Console):
 
     import ee
     ee.Authenticate()
-    ee.Initialize(project='your-cloud-project')
 
 A browser will open. If nothing happens, use
 ee.Authenticate(auth_mode='notebook'), which prints a URL to paste instead.
 
-Then restart QGIS so the Earth Engine plugin loads cleanly."""
+Then restart QGIS. The Earth Engine plugin will ask for your Google Cloud \
+project, because ee.Authenticate() rewrites the credentials file from scratch and \
+that is where the plugin keeps the project id. Your project is shown in the \
+Earth Engine Code Editor at https://code.earthengine.google.com, and it has to be \
+registered for Earth Engine at https://code.earthengine.google.com/register.
+
+Credentials live in ~/.config/earthengine/credentials. One older than about two \
+years has usually been revoked and needs replacing this way."""
 
 
 _ee = None

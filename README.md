@@ -213,6 +213,39 @@ Engine plugin walks you through both.
 
 [register]: https://code.earthengine.google.com/register
 
+<details>
+<summary>If Earth Engine will not sign in</summary>
+
+Symptom: the Google Earth Engine plugin fails to load with *"Please authorize
+access to your Earth Engine account"*, or this plugin reports **Earth Engine is
+not signed in**. Because that plugin fails inside its own `classFactory`, it never
+finishes loading, so its sign-in command is unavailable and you have to
+authenticate around it.
+
+From the QGIS Python Console (*Plugins → Python Console*) — this works even with
+the plugin broken, since its bundled `ee` is already on the path:
+
+```python
+import ee
+
+ee.Authenticate()
+```
+
+A browser opens; if it does not, use `ee.Authenticate(auth_mode='notebook')`, which
+prints a URL and takes a pasted code.
+
+**Then restart QGIS, and expect to be asked for your Cloud project again.**
+`ee.Authenticate()` writes `~/.config/earthengine/credentials` from scratch rather
+than merging, and the Earth Engine plugin stores the project id *in that same
+file* — so authenticating clears it. Your project is shown in the
+[Code Editor](https://code.earthengine.google.com), and it must be
+[registered for Earth Engine][register].
+
+A credentials file more than a year or two old has usually been revoked, and no
+amount of retrying will help; re-authenticating is the fix.
+
+</details>
+
 ## Using it
 
 1. Click the toolbar icon to open the dock.
