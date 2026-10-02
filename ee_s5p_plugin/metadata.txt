@@ -3,7 +3,7 @@ name=Earth Engine Catalog Query
 qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
 description=Search the Google Earth Engine Data Catalog from QGIS -- Sentinel-5P and 1,100+ other datasets -- filter it, then extract data onto the map, auto-scaling large areas into H3 tiles.
-version=1.1.0
+version=1.1.1
 author=Brandon Crosbie
 email=bcrosb31@gmail.com
 
@@ -22,7 +22,17 @@ deprecated=False
 hasProcessingProvider=no
 server=False
 
-changelog=1.1.0 (2026-10-01)
+changelog=1.1.1 (2026-10-02)
+    Passes the plugins.qgis.org security scan.
+    - Bandit flagged two try/except/pass blocks and an unguarded urllib call,
+      which blocks a plugin from approval. All three are now fixed rather than
+      silenced: the swallowed exceptions are logged, and the crawler refuses any
+      URL that is not http or https, so a tampered catalog cannot make it read
+      local files through file:// -- which is the actual risk B310 describes.
+    - Bandit's rules now run locally as part of lint and in the pre-upload check,
+      so a blocking finding fails here instead of at the upload form.
+
+    1.1.0 (2026-10-01)
     Verified on Qt 5 and Qt 6, and an important area-of-interest fix.
     - Runs unchanged on QGIS 3.22, 3.40, 3.44 LTR and 4.2, across PyQt 5.15.6 to
       6.11.0 and Python 3.10 to 3.12. Every Qt import goes through qgis.PyQt and

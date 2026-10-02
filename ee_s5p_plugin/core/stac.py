@@ -63,6 +63,29 @@ class StacError(RuntimeError):
     """Raised when the catalog cannot be read."""
 
 
+#: The only schemes the crawler will open.
+ALLOWED_SCHEMES = ("https", "http")
+
+
+def _require_web_url(url: str) -> str:
+    """Refuse anything that is not an ordinary web URL.
+
+    The crawl follows links *out of the catalog*, so the URLs it opens are not all
+    hard-coded here.  Without this, a redirected or tampered catalog could point at
+    ``file:///...`` and have the plugin read local files and hand them back as
+    dataset metadata.  ``urlopen`` honours those schemes happily.
+    """
+    import urllib.parse
+
+    scheme = urllib.parse.urlparse(url).scheme.lower()
+    if scheme not in ALLOWED_SCHEMES:
+        raise StacError(
+            f"Refusing to fetch {url!r}: only "
+            f"{' and '.join(ALLOWED_SCHEMES)} URLs are allowed"
+        )
+    return url
+
+
 # ---------------------------------------------------------------------------
 # HTTP
 # ---------------------------------------------------------------------------
@@ -113,6 +136,7 @@ class HttpClient:
         raise StacError(f"Could not fetch {url}: {last_error}") from last_error
 
     def _get_json_once(self, url: str) -> dict:
+        _require_web_url(url)
         if self._session is not None:
             response = self._session.get(url, timeout=self.timeout)
             response.raise_for_status()
@@ -120,10 +144,15 @@ class HttpClient:
 
         import urllib.request
 
-        request = urllib.request.Request(
+        # Both suppressions below are needed -- ruff reads one, bandit the other --
+        # and both are earned: the scheme is constrained to http/https by
+        # _require_web_url above, which is exactly what B310 asks you to audit.
+        request = urllib.request.Request(  # noqa: S310  # nosec B310
             url, headers={"User-Agent": "ee_s5p_plugin (QGIS plugin)"}
         )
-        with urllib.request.urlopen(request, timeout=self.timeout) as handle:
+        with urllib.request.urlopen(  # noqa: S310  # nosec B310
+            request, timeout=self.timeout
+        ) as handle:
             return json.load(handle)
 
     def close(self) -> None:

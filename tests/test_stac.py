@@ -305,6 +305,51 @@ class TestCrawl:
         assert calls
 
 
+class TestUrlSchemeGuard:
+    """The crawl follows links out of the catalog, so URLs are not all ours.
+
+    Without this, a redirected or tampered catalog could point at file:/// and
+    have the plugin read local files back as dataset metadata -- urlopen honours
+    those schemes happily. plugins.qgis.org's Bandit scan flags the unguarded
+    call (B310) and blocks the upload over it.
+    """
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://storage.googleapis.com/earthengine-stac/catalog/catalog.json",
+            "http://example.org/catalog.json",
+        ],
+    )
+    def test_web_urls_are_allowed(self, url):
+        assert stac._require_web_url(url) == url
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "file:///etc/passwd",
+            "file:///C:/Windows/win.ini",
+            "ftp://host/catalog.json",
+            "javascript:alert(1)",
+            "data:application/json,{}",
+            "catalog.json",
+            "",
+        ],
+    )
+    def test_everything_else_is_refused(self, url):
+        with pytest.raises(stac.StacError, match="only https and http"):
+            stac._require_web_url(url)
+
+    def test_the_guard_runs_before_any_fetch(self, monkeypatch):
+        """It has to reject before the request is built, not after."""
+        client = stac.HttpClient(retries=1)
+        monkeypatch.setattr(
+            client, "_session", None
+        )  # force the urllib path, which is the flagged one
+        with pytest.raises(stac.StacError, match="Refusing to fetch"):
+            client._get_json_once("file:///etc/passwd")
+
+
 class TestHttpClientRetries:
     def test_retries_then_raises_stac_error(self, monkeypatch):
         client = stac.HttpClient(retries=3)

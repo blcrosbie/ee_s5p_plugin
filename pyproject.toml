@@ -30,6 +30,11 @@ select = [
     "N",    # naming
     "ARG",  # unused arguments
     "TRY",  # exception anti-patterns
+    # flake8-bandit: the same checks plugins.qgis.org runs Bandit for at upload
+    # time. A critical Bandit finding blocks the plugin, so it has to fail here
+    # first -- a 'try/except/pass' once got a release blocked after it passed
+    # every other local check.
+    "S",
     "RUF",
 ]
 ignore = [
@@ -62,9 +67,11 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 # Tests name things for readability and poke at internals on purpose.
-"tests/*" = ["N803", "N806", "SLF001", "E501", "SIM115", "RUF012"]
+# Tests assert on internals and build fixtures; the security rules are about
+# shipped code, and tests are not shipped.
+"tests/*" = ["N803", "N806", "SLF001", "E501", "SIM115", "RUF012", "S"]
 # The tools are scripts: a late import after sys.path setup is the point.
-"tools/*" = ["E402"]
+"tools/*" = ["E402", "S404", "S603", "S607"]  # tools shell out deliberately
 
 [tool.ruff.lint.isort]
 known-first-party = ["core", "gui"]

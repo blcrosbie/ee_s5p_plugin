@@ -18,11 +18,14 @@ town, and each step finer divides a cell into roughly seven.
 
 from __future__ import annotations
 
+import logging
 import math
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 
 from . import geometry as geom
+
+LOGGER = logging.getLogger(__name__)
 
 #: Average H3 cell area in km², by resolution.  Matches
 #: ``h3.average_hexagon_area(res, unit="km^2")`` and is kept here so a plan can
@@ -215,8 +218,16 @@ class H3Grid(TileGrid):
         if getter is not None:
             try:
                 return float(getter(resolution, unit="km^2"))
-            except Exception:
-                pass
+            except Exception as error:
+                # Falling back to the published table is fine, but swallowing the
+                # reason silently would hide an h3 API change behind numbers that
+                # merely look plausible.
+                LOGGER.debug(
+                    "h3 %s(%s) failed, using the published area table: %s",
+                    getattr(getter, "__name__", "area getter"),
+                    resolution,
+                    error,
+                )
         return super().average_area_km2(resolution)
 
     def _cells(self, geojson: dict, resolution: int) -> list[str]:
@@ -237,8 +248,13 @@ class H3Grid(TileGrid):
         if getter is not None:
             try:
                 return float(getter(cell, unit="km^2"))
-            except Exception:
-                pass
+            except Exception as error:
+                LOGGER.debug(
+                    "h3 cell_area(%s) failed, using the average for resolution %s: %s",
+                    cell,
+                    resolution,
+                    error,
+                )
         return self.average_area_km2(resolution)
 
     def tiles_for(self, geojson: dict, resolution: int) -> list[Tile]:
@@ -337,8 +353,8 @@ def grid(prefer_h3: bool = True) -> TileGrid:
     if prefer_h3 and h3_available():
         try:
             return H3Grid()
-        except HexGridError:
-            pass
+        except HexGridError as error:
+            LOGGER.info("Falling back to the grid tiling: %s", error)
     return LatLonGrid()
 
 

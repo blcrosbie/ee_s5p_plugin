@@ -4,6 +4,9 @@
 # and `h3` is an optional runtime extra (the plugin falls back without it).
 pytest>=7.4
 ruff>=0.6
+# The scanner plugins.qgis.org runs at upload time; a critical finding there
+# blocks the plugin, so CI runs it too.
+bandit>=1.7
 requests>=2.31
 
 # Optional at runtime, installed in CI so the real H3 code path is tested.

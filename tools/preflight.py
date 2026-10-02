@@ -324,6 +324,59 @@ def check_loads_from_zip(path: str, report: Report) -> None:
             print(f"        {out.stdout.strip()}  (version, datasets)")
 
 
+def check_security_scan(report: Report) -> None:
+    """Run the same scan plugins.qgis.org runs, before they do.
+
+    The repository blocks a plugin outright on a critical Bandit finding, and it
+    is the one check that is not visible from the zip's contents -- a
+    try/except/pass once got a release blocked after every other check passed.
+    Prefers real Bandit; falls back to ruff, which implements the same rules as
+    its `S` ruleset.
+    """
+    report.section("Security scan (what plugins.qgis.org runs)")
+    package = os.path.join(REPO_ROOT, PACKAGE)
+
+    bandit = subprocess.run(
+        [sys.executable, "-m", "bandit", "-q", "-r", package, "-f", "json"],
+        capture_output=True,
+        text=True,
+    )
+    if bandit.returncode in (0, 1) and bandit.stdout.strip().startswith("{"):
+        results = json.loads(bandit.stdout).get("results", [])
+        critical = [r for r in results if r.get("issue_severity") in ("HIGH", "MEDIUM")]
+        for issue in critical[:5]:
+            print(
+                f"        {issue['issue_severity']:<7} {issue['test_id']} "
+                f"{os.path.relpath(issue['filename'], REPO_ROOT)}:{issue['line_number']}"
+                f"  {issue['issue_text'][:60]}"
+            )
+        report.check(f"bandit: no blocking findings ({len(results)} total)", not critical)
+        return
+
+    ruff = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruff",
+            "check",
+            package,
+            "--select",
+            "S",
+            "--output-format",
+            "concise",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    lines = [line for line in ruff.stdout.splitlines() if ": S" in line]
+    for line in lines[:5]:
+        print(f"        {line}")
+    report.check(
+        "ruff flake8-bandit: no findings (install bandit for the exact scan)",
+        not lines,
+    )
+
+
 def check_repo(report: Report) -> None:
     report.section("Repository")
 
@@ -374,6 +427,7 @@ def main(argv: list[str] | None = None) -> int:
         check_contents(archive, report)
         check_catalog(archive, report)
     check_loads_from_zip(path, report)
+    check_security_scan(report)
     check_repo(report)
 
     print("\n" + "=" * 70)

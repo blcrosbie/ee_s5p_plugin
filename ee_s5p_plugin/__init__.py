@@ -13,7 +13,7 @@ This program is free software under the GNU General Public License v2 or later.
 
 from __future__ import annotations
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __author__ = "Brandon Crosbie"
 
 
