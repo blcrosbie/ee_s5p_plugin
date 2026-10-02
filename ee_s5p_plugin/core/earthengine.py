@@ -125,29 +125,6 @@ def bbox_to_ee(bbox: Sequence[float]):
     return ee.Geometry.Rectangle([west, south, east, north])
 
 
-def _geometries_of(geojson: Mapping) -> list[dict]:
-    """Flatten any GeoJSON container down to a list of geometry dicts."""
-    kind = geojson.get("type")
-    if kind == "FeatureCollection":
-        out: list[dict] = []
-        for feature in geojson.get("features") or ():
-            if isinstance(feature, Mapping) and feature.get("geometry"):
-                out.extend(_geometries_of(feature["geometry"]))
-        return out
-    if kind == "Feature":
-        inner = geojson.get("geometry")
-        return _geometries_of(inner) if isinstance(inner, Mapping) else []
-    if kind == "GeometryCollection":
-        out = []
-        for inner in geojson.get("geometries") or ():
-            if isinstance(inner, Mapping):
-                out.extend(_geometries_of(inner))
-        return out
-    if kind:
-        return [dict(geojson)]
-    return []
-
-
 def geojson_to_ee(geojson: Mapping):
     """Any GeoJSON geometry / Feature / FeatureCollection -> ``ee.Geometry``.
 
@@ -160,7 +137,7 @@ def geojson_to_ee(geojson: Mapping):
     if not isinstance(geojson, Mapping):
         raise EarthEngineError("Expected a GeoJSON mapping")
 
-    geometries = _geometries_of(geojson)
+    geometries = geometry.geometries_of(geojson)
     if not geometries:
         raise EarthEngineError("That GeoJSON contains no geometries")
     if len(geometries) == 1:

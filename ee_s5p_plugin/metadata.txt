@@ -3,12 +3,12 @@ name=Earth Engine Catalog Query
 qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
 supportsQt6=True
-description=Search the whole Google Earth Engine Data Catalog from QGIS, filter it by type, tags, time and area, then extract data onto the map.
-version=1.0.0
+description=Search the Google Earth Engine Data Catalog from QGIS -- Sentinel-5P and 1,100+ other datasets -- filter it, then extract data onto the map, auto-scaling large areas into H3 tiles.
+version=1.0.1
 author=Brandon Crosbie
 email=bcrosb31@gmail.com
 
-about=Browse all 1,100+ datasets in Google's Earth Engine Data Catalog without leaving QGIS and without copying dataset ids out of web pages. Search by id, title, publisher, tag or band name, then narrow by dataset type, provider, tags, date range and area of interest. The dataset list ships with the plugin, so browsing works offline, and can be refreshed from Google's published STAC catalog in a few seconds. For a chosen dataset the plugin shows bands with units and value ranges, availability and update cadence, licence and citation, and Google's own suggested colour palette. Extractions are estimated locally before being sent, so an over-large request is caught -- with a suggested resolution that would fit -- instead of failing after a long wait. Results are written as GeoJSON, CSV or JSON and loaded straight onto the map. Image collections, single images and feature collections are all supported. Requires the separate "Google Earth Engine" plugin, which provides the Earth Engine Python API and authentication; the catalog browser works without it.
+about=Browse all 1,100+ datasets in Google's Earth Engine Data Catalog without leaving QGIS and without copying dataset ids out of web pages. Search by id, title, publisher, tag or band name, then narrow by dataset type, provider, tags, date range and area of interest. The dataset list ships with the plugin, so browsing works offline, and can be refreshed from Google's published STAC catalog in a few seconds. For a chosen dataset the plugin shows bands with units and value ranges, availability and update cadence, licence and citation, and Google's own suggested colour palette. Extractions are estimated locally before being sent, so an over-large request is caught -- with a suggested resolution that would fit -- instead of failing after a long wait. Results are written as GeoJSON, CSV or JSON and loaded straight onto the map. Image collections, single images and feature collections are all supported. Areas too large for a single Earth Engine call are handled for you: the plugin works out a tiling of H3 hexagons coarse enough to keep the request count down and fine enough that each tile is accepted, shows you how many requests that is and how long it will take, and then fetches them -- sequentially, or several at once with a worker count capped at half your CPUs. Every extracted row carries its H3 index, so results can be joined against anything else keyed by H3. Tiles that Earth Engine still refuses are split finer and retried, and rate limiting is absorbed with backoff rather than failing the job. Requires the separate "Google Earth Engine" plugin, which provides the Earth Engine Python API and authentication; the catalog browser works without it. The optional h3 package gives real H3 indexes -- without it the plugin tiles with an equivalent latitude/longitude grid instead.
 
 tracker=https://github.com/blcrosbie/ee_s5p_plugin/issues
 repository=https://github.com/blcrosbie/ee_s5p_plugin
@@ -16,14 +16,34 @@ homepage=https://github.com/blcrosbie/ee_s5p_plugin
 
 category=Web
 icon=icon.png
-tags=earth engine,google,remote sensing,satellite,raster,vector,sentinel,landsat,modis,atmosphere,air quality,climate,stac,catalog,download
+tags=earth engine,google,sentinel,sentinel-5p,tropomi,remote sensing,satellite,raster,vector,landsat,modis,atmosphere,air quality,climate,stac,catalog,download,h3,hexagon
 
 experimental=False
 deprecated=False
 hasProcessingProvider=no
 server=False
 
-changelog=1.0.0 (2026-10-01)
+changelog=1.0.1 (2026-10-01)
+    Auto-scaling for large areas.
+    - Areas too large for one Earth Engine call are tiled into H3 hexagons. The
+      tiling is chosen arithmetically from the request limit, so planning is
+      instant and costs no quota; the dialog shows the tile count, size and
+      estimated time before anything is sent.
+    - Optional parallel fetching, capped at half the machine's CPUs, with a live
+      speed-up estimate per worker count. Sequential remains the default and
+      cannot be rate limited.
+    - HTTP 429 and quota errors are absorbed with exponential backoff and jitter,
+      and concurrency narrows itself while the server is pushing back, so a job
+      slows down instead of failing.
+    - Tiles Earth Engine still refuses are subdivided one resolution finer and
+      retried, up to three times.
+    - Every extracted row carries its h3_index and tile_resolution, so output can
+      be joined against anything else keyed by H3.
+    - h3 is optional: without it, tiling falls back to an equivalent
+      latitude/longitude grid and says so.
+    - Collection presets, led by Sentinel-5P / TROPOMI.
+
+    1.0.0 (2026-10-01)
     Rewritten for modern QGIS.
     - Covers the entire Earth Engine Data Catalog (1,155 datasets) instead of a
       92-dataset subset, sourced from Google's published STAC catalog rather than

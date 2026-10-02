@@ -149,6 +149,219 @@ def check_styling(checks: Checks) -> None:
             checks.check(label, False, "no LayerError raised")
 
 
+def check_autoscale(checks: Checks, dock) -> None:
+    """Plan a tiled extraction, then run it against a stubbed Earth Engine.
+
+    The planning arithmetic is unit tested; what needs a real QGIS is the dialog
+    and the QgsTask that drives the chunks, including the adaptive subdivision
+    when Earth Engine refuses a tile.
+    """
+    from ee_s5p_plugin.core import concurrency, hexgrid
+    from ee_s5p_plugin.core import earthengine as ee_mod
+    from ee_s5p_plugin.core import plan as plan_mod
+    from ee_s5p_plugin.gui.autoscale import AutoScaleDialog
+    from ee_s5p_plugin.gui.tasks import ChunkedExtractTask
+
+    dataset = dock.catalog.get("COPERNICUS/S5P/OFFL/L3_NO2")
+    if not checks.check("S5P NO2 is in the catalog for planning", dataset is not None):
+        return
+
+    # A US state sized area, which cannot be fetched in one request.
+    state = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [-80.52, 39.72],
+                [-74.69, 39.72],
+                [-74.69, 42.27],
+                [-80.52, 42.27],
+                [-80.52, 39.72],
+            ]
+        ],
+    }
+    grid = hexgrid.grid()
+    checks.check(
+        f"tiling grid available ({grid.describe()})",
+        grid is not None,
+    )
+
+    bands = dataset.band_names[:3]
+    try:
+        built = plan_mod.plan(
+            dataset,
+            state,
+            bands,
+            "2024-06-01",
+            "2024-07-01",
+            resolution_m=1113.2,
+            tile_grid=grid,
+            force_tiling=True,
+        )
+    except plan_mod.PlanError as error:
+        checks.check("a state sized request can be planned", False, str(error))
+        return
+
+    checks.check(
+        "the plan tiles the area",
+        built.chunked and built.tile_count > 1,
+        f"{built.tile_count} tiles at res {built.tile_resolution}",
+    )
+    checks.check(
+        "every planned tile fits within the request limit",
+        all(request_fits(tile, built) for tile in built.tiles),
+    )
+    checks.check(
+        "more workers predicts a 2x or better speed-up",
+        built.speedup(4) > 2.0,
+        f"{built.speedup(4):.1f}x",
+    )
+
+    # -- the dialog -----------------------------------------------------
+    dialog = AutoScaleDialog(
+        built,
+        replan=lambda res: plan_mod.plan(
+            dataset,
+            state,
+            bands,
+            "2024-06-01",
+            "2024-07-01",
+            resolution_m=1113.2,
+            tile_grid=grid,
+            force_tiling=True,
+            minimum_resolution=res,
+            maximum_resolution=res,
+        ),
+        parent=dock,
+    )
+    checks.check("auto-scale dialog offers tile sizes", dialog.resolutionCB.count() > 1)
+    checks.check(
+        "auto-scale dialog offers worker counts",
+        dialog.workersCB.count() == len(concurrency.worker_choices()),
+    )
+    checks.check(
+        "auto-scale dialog reports a plan", len(dialog.summary.toPlainText()) > 50
+    )
+    before = dialog.plan.tile_count
+    finer = dialog.resolutionCB.findData((built.tile_resolution or 5) + 1)
+    if finer >= 0:
+        dialog.resolutionCB.setCurrentIndex(finer)
+        checks.check(
+            "choosing a finer tile size re-plans",
+            dialog.plan.tile_count > before,
+            f"{before} -> {dialog.plan.tile_count}",
+        )
+    checks.check("dialog reports a worker count", dialog.workers >= 1)
+    dialog.close()
+
+    # -- running it, with Earth Engine stubbed ---------------------------
+    small = plan_mod.plan(
+        dataset,
+        state,
+        bands,
+        "2024-06-01",
+        "2024-06-02",
+        resolution_m=1113.2,
+        tile_grid=grid,
+        force_tiling=True,
+        minimum_resolution=4,
+        maximum_resolution=4,
+    )
+
+    original_extract = ee_mod.extract
+    original_ring = ee_mod.ring_to_ee
+    calls = []
+
+    def fake_extract(request):
+        calls.append(request.dataset_id)
+        return [
+            {"longitude": -80.0, "latitude": 40.0, bands[0]: 0.0001},
+            {"longitude": -79.9, "latitude": 40.1, bands[0]: 0.0002},
+        ]
+
+    try:
+        ee_mod.extract = fake_extract
+        ee_mod.ring_to_ee = lambda ring: ("region", len(ring))
+
+        for workers in (1, 4):
+            calls.clear()
+            task = ChunkedExtractTask(small, workers=workers, tile_grid=grid)
+            ok = task.run()
+            checks.check(
+                f"chunked run succeeds with {concurrency.describe_workers(workers)}",
+                ok,
+                task._summary,
+            )
+            checks.check(
+                f"every tile was fetched ({workers} worker(s))",
+                len(calls) == small.tile_count,
+                f"{len(calls)} of {small.tile_count}",
+            )
+            rows = task.data
+            checks.check(
+                f"rows collected ({workers} worker(s))",
+                len(rows) == 2 * small.tile_count,
+                f"{len(rows)} rows",
+            )
+            key = "h3_index" if grid.indexed else "tile_id"
+            checks.check(
+                f"every row carries its {key}",
+                all(row.get(key) for row in rows),
+            )
+            checks.check(
+                f"distinct tile ids are recorded ({workers} worker(s))",
+                len({row[key] for row in rows}) == small.tile_count,
+            )
+
+        # -- a tile Earth Engine refuses must be subdivided and retried ----
+        refused = {"n": 0}
+
+        def picky_extract(request):
+            # Refuse the first tile once, by its bounding box width.
+            refused["n"] += 1
+            if refused["n"] == 1:
+                raise RuntimeError(
+                    "Too many values: 9000000 points x 1 bands x 1 images > 1048576."
+                )
+            return [{"longitude": -80.0, "latitude": 40.0, bands[0]: 0.5}]
+
+        ee_mod.extract = picky_extract
+        task = ChunkedExtractTask(small, workers=1, tile_grid=grid)
+        ok = task.run()
+        checks.check("a refused tile is subdivided and retried", ok, task._summary)
+        checks.check(
+            "subdivision produced extra requests",
+            refused["n"] > small.tile_count,
+            f"{refused['n']} requests for {small.tile_count} tiles",
+        )
+        checks.check("data survived the subdivision", len(task.data) > 0)
+
+        # -- a permanently failing tile is reported, not swallowed ---------
+        def broken_extract(request):
+            raise RuntimeError("Image.select: no such band 'nope'")
+
+        ee_mod.extract = broken_extract
+        task = ChunkedExtractTask(small, workers=1, tile_grid=grid)
+        ok = task.run()
+        checks.check("a permanent failure is reported as a failure", not ok)
+        checks.check(
+            "failures are listed for the user",
+            len(task.failures) > 0,
+            task.failures[0] if task.failures else "",
+        )
+    finally:
+        ee_mod.extract = original_extract
+        ee_mod.ring_to_ee = original_ring
+
+
+def request_fits(tile, built) -> bool:
+    from ee_s5p_plugin.core import request as request_mod
+
+    estimate = request_mod.estimate_image_collection(
+        tile.bbox, built.resolution_m, bands=len(built.bands), images=built.images
+    )
+    return estimate.fits
+
+
 class Checks:
     def __init__(self):
         self.failures: list[str] = []
@@ -199,7 +412,32 @@ def run() -> int:
             dock.resultsModel.rowCount() < len(dock.catalog),
         )
         checks.check("type filter is populated", dock.typeCB.count() >= 3)
-        checks.check("provider filter is populated", dock.providerCB.count() > 50)
+        checks.check(
+            "collection presets are offered",
+            dock.presetCB.count() >= 2,
+        )
+
+        # The Sentinel-5P preset is the plugin's original purpose and primary audience.
+        from ee_s5p_plugin.gui.dockwidget import PRESETS
+
+        s5p_index = next(
+            (i for i, (label, _f) in enumerate(PRESETS) if "Sentinel-5P" in label), -1
+        )
+        if checks.check("a Sentinel-5P preset exists", s5p_index > 0):
+            dock.presetCB.setCurrentIndex(s5p_index)
+            rows = dock.resultsModel.rowCount()
+            ids = [dock.resultsModel.dataset_at(r).id for r in range(rows)]
+            checks.check(
+                "the Sentinel-5P preset selects the S5P products",
+                rows >= 18 and all("S5P" in i for i in ids),
+                f"{rows} rows, e.g. {ids[:2]}",
+            )
+            dock.presetCB.setCurrentIndex(0)
+            checks.check(
+                "clearing the preset restores the whole catalog",
+                dock.resultsModel.rowCount() > rows,
+            )
+            checks.check("provider filter is populated", dock.providerCB.count() > 50)
 
         # Text search
         dock.searchLE.setText("sentinel 5p no2")
@@ -305,6 +543,7 @@ def run() -> int:
             )
 
         check_styling(checks)
+        check_autoscale(checks, dock)
 
         plugin.unload()
         checks.check("unload removes the action", len(iface.toolbar_actions) == 0)

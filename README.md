@@ -1,13 +1,19 @@
 # Earth Engine Catalog Query
 
-A QGIS plugin for browsing the whole [Google Earth Engine Data Catalog][catalog]
-and pulling data out of it onto the map — without leaving QGIS, and without
-copying dataset ids out of web pages.
+A QGIS plugin for browsing the [Google Earth Engine Data Catalog][catalog] and
+pulling data out of it onto the map — without leaving QGIS, and without copying
+dataset ids out of web pages.
+
+Built around the **Sentinel-5P / TROPOMI** atmospheric products, which get a
+one-click preset, and extended to the other 1,100+ datasets in the catalog.
 
 [catalog]: https://developers.google.com/earth-engine/datasets
 
 ```
-Search ───▶ Filter (type · provider · tags · time · area) ───▶ Inspect ───▶ Extract ───▶ Layer
+Search ──▶ Filter (type · provider · tags · time · area) ──▶ Inspect ──▶ Extract ──▶ Layer
+                                                                  │
+                                            too large for one call ▼
+                                   Auto-scale: H3 tiles ──▶ fetch (1..N workers) ──▶ Layer
 ```
 
 ## What it does
@@ -27,8 +33,17 @@ Search ───▶ Filter (type · provider · tags · time · area) ───�
   would.
 - **Writes GeoJSON, CSV or JSON** and loads the result straight onto the map, with
   the dataset's palette applied on request.
+- **Auto-scales what won't fit.** A whole US state of Sentinel-5P cannot be
+  fetched in one call. The plugin tiles it into [H3][h3] hexagons — picking the
+  coarsest tiling that fits, so the request count stays low — shows you what it
+  will cost, then fetches the tiles. Every row carries its `h3_index`.
+- **Optional parallel fetching**, 1 to half your CPUs, with the predicted speed-up
+  shown per choice. Rate limits are absorbed with backoff; tiles Earth Engine
+  still refuses are split finer and retried.
 - **Never blocks QGIS.** Catalog refreshes and extractions run as cancellable
   background tasks.
+
+[h3]: https://h3geo.org
 
 Image collections, single images and feature collections are all supported.
 
@@ -52,6 +67,7 @@ Download `ee_s5p_plugin-<version>.zip` from the [releases page][releases], then
 | QGIS | 3.22 or newer, including 4.x — works on both Qt 5 and Qt 6 builds |
 | For browsing | nothing beyond QGIS |
 | For extracting | the [**Google Earth Engine**][ee-plugin] plugin, which provides the `ee` Python API and handles authentication |
+| For real H3 indexes | the optional [`h3`][h3] package — without it, tiling falls back to an equivalent lat/lon grid |
 
 [ee-plugin]: https://plugins.qgis.org/plugins/ee_plugin/
 
@@ -80,6 +96,94 @@ Engine plugin walks you through both.
 
 **Style layer** shades the extracted layer using the palette Google publishes for
 that band.
+
+## Auto-scaling large areas
+
+Earth Engine answers at most **1,048,576 values** per `getRegion` call, where
+values = points x bands x images. A US state at Sentinel-5P's native 1,113 m, over
+a year, across 12 bands, is about a thousand times that. So the plugin tiles it.
+
+### Picking the tiling
+
+The resolution is **calculated, not probed**. Point count scales as the inverse
+square of the ground resolution, so the area one request can cover is:
+
+```
+area_budget_km² = limit × 0.7 × (resolution_m / 1000)² / (bands × images)
+```
+
+The search then walks H3 resolutions from coarse to fine and takes the first whose
+cells fit in that budget. Coarse wins, because each tile is a round trip.
+
+| H3 res | Cell area | Scale |
+|---:|---:|---|
+| 3 | ~12,393 km² | a region or large state |
+| 4 | ~1,770 km² | a county |
+| 5 | ~253 km² | a metropolitan area |
+| 6 | ~36 km² | a city |
+| 7 | ~5.2 km² | a town |
+| 8 | ~0.74 km² | a neighbourhood |
+
+Pennsylvania (139,000 km²), 3 bands, 1,113 m:
+
+| Date range | Images | Tiling | Tiles |
+|---|---:|---|---:|
+| 1 day | 1 | not needed | 1 |
+| 1 month | 30 | res 4 | 84 |
+| 1 year | 183 | res 5 | 545 |
+
+Because it is arithmetic, planning is instant and costs no Earth Engine quota. The
+dialog shows the tile count, tile size, per-tile estimate and predicted time before
+anything is sent, and you can override the resolution either way.
+
+### Fetching the tiles
+
+Pick a worker count from 1 to half your CPUs (capped at 8 — past that Earth Engine
+throttles anyway). The dialog shows the predicted time and speed-up for each:
+
+```
+sequential (one request at a time) — 18 min 10 s
+2 parallel requests               — 11 min 21 s  (1.6×)
+4 parallel requests               —  5 min 41 s  (3.2×)
+8 parallel requests               —  2 min 50 s  (6.4×)
+```
+
+**Sequential is the default**: a little slower, but it cannot be rate limited for
+concurrency and there is less to reason about when something goes wrong.
+
+These are threads, not processes. An Earth Engine request is almost entirely an
+HTTPS round trip and Python releases the GIL while waiting, so threads give the
+full speed-up without re-importing QGIS per worker or pickling `ee` objects. The
+CPU cap is kept because it is the intuitive dial, but the real ceiling is usually
+Earth Engine's rate limit, not your CPU.
+
+### When Earth Engine pushes back
+
+| Failure | Response |
+|---|---|
+| HTTP 429, quota, "too many concurrent" | Exponential backoff with jitter. Concurrency is narrowed for *every* worker, not just the one that saw it, then widened again after a run of successes. |
+| "Too many values", "user memory limit exceeded" | Classified as *too large*, not transient — retrying unchanged would only burn attempts. The tile is split one resolution finer (7 children, area exactly conserved) and retried, up to 3 times. |
+| Anything else | Reported with the tile id, not swallowed. |
+
+So a throttled job slows down instead of failing.
+
+### H3, and life without it
+
+`h3` is a compiled extension and QGIS does not bundle it, so it is **optional**:
+
+- **With `h3`** — tiles are real H3 cells and every extracted row carries
+  `h3_index` and `tile_resolution`. Output joins directly against anything else
+  keyed by H3, including `h3-js` on the web side.
+- **Without `h3`** — tiles come from a latitude/longitude grid that covers the area
+  just as exactly. Rows carry `tile_id` instead of `h3_index`, and the dialog says
+  plainly that the ids are not real H3 indexes.
+
+Nothing is installed automatically. The dialog shows the right command for your
+platform; on OSGeo4W that is:
+
+```
+C:\OSGeo4Win\python-qgis-ltr.bat -m pip install h3
+```
 
 ## How it finds datasets
 
@@ -117,7 +221,7 @@ snapshot would hide today's imagery.
 ```bash
 pip install -r requirements-dev.txt
 
-pytest tests              # 371 tests, no QGIS needed
+pytest tests              # 546 tests, no QGIS needed
 pytest -m network         # also hit the live Earth Engine catalog
 ruff check . && ruff format --check .
 
@@ -144,11 +248,15 @@ ee_s5p_plugin/
     geometry.py  buffers, areas, containment
     request.py   validation, local size estimation, error interpretation
     export.py    GeoJSON / CSV / JSON writers
+    hexgrid.py   H3 tiling, with a lat/lon grid fallback
+    plan.py      auto-scale: choose a tiling, cost it, refine on refusal
+    concurrency.py  worker policy, 429 backoff, the parallel runner
     earthengine.py  the only module that imports `ee`
   gui/         Qt and QGIS live here
     dockwidget.py   the dock, built in code (no .ui file)
     catalog_model.py  table model over the result set
     tasks.py        QgsTask subclasses for background work
+    autoscale.py    the tiling plan dialog
     layers.py       map layers, geometry bridging, styling
     details.py      metadata as HTML
     messages.py     message bar and dialogs
