@@ -20,13 +20,39 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #: Documentation and configuration a user or contributor actually reads.
 TEXT_SUFFIXES = (".md", ".txt", ".toml", ".yml", ".cfg", ".py")
 
-SKIP_DIRS = {".git", "__pycache__", "dist", "build", ".pytest_cache", ".ruff_cache"}
+SKIP_DIRS = {
+    ".git",
+    "__pycache__",
+    "dist",
+    "build",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    "node_modules",
+    "site-packages",
+    ".eggs",
+}
+
+
+def _is_virtualenv(path: str) -> bool:
+    """A directory holding ``pyvenv.cfg`` is a virtual environment root.
+
+    Testing for the marker rather than for names like ``venv`` or ``.venv`` catches
+    whatever a contributor happens to call theirs. A venv created inside the
+    checkout would otherwise pull several thousand third-party files into these
+    checks, which are about files we wrote.
+    """
+    return os.path.exists(os.path.join(path, "pyvenv.cfg"))
 
 
 def text_files() -> list[str]:
     found = []
     for root, dirs, files in os.walk(REPO_ROOT):
-        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        dirs[:] = [
+            d
+            for d in dirs
+            if d not in SKIP_DIRS and not _is_virtualenv(os.path.join(root, d))
+        ]
         found.extend(
             os.path.join(root, name) for name in files if name.endswith(TEXT_SUFFIXES)
         )
@@ -42,6 +68,25 @@ def relative(path: str) -> str:
 
 def test_there_are_files_to_check():
     assert FILES
+
+
+def test_only_our_own_files_are_checked():
+    """A virtual environment inside the checkout must not be scanned.
+
+    One did, and it quietly tripled the suite from 667 tests to 1,965 by walking
+    site-packages -- which would also fail these checks on third-party code we do
+    not control.
+    """
+    strays = [
+        relative(path)
+        for path in FILES
+        if "site-packages" in path or os.sep + "venv" + os.sep in path
+    ]
+    assert not strays, f"third-party files are being checked: {strays[:5]}"
+    assert len(FILES) < 200, (
+        f"{len(FILES)} files collected, which is far more than this repository "
+        "contains -- something is being walked that should be skipped"
+    )
 
 
 @pytest.mark.parametrize("path", FILES, ids=relative)

@@ -66,7 +66,16 @@ file → **Install Plugin**.
 
 ### Building the zip yourself
 
-From a clone of this repository:
+**There is no compile step.** If you are used to QGIS plugins built with
+`pb_tool compile`, `make`, `pyuic5` or `pyrcc5` -- as version 0.1 of this plugin
+was -- none of that applies here:
+
+| Old step | Why it is gone |
+|---|---|
+| `pyrcc5 resources.qrc -o resources.py` | PyQt6 removed `pyrcc` altogether, so a compiled resource module would make the plugin fail to load on QGIS 4. The icon is loaded from its file path instead. |
+| `pyuic5` / loading a `.ui` file | The dock is built in Python. The old form placed every widget at fixed pixel coordinates, so it could not be resized or hold a long result list, and a generated file can silently drift from the code. |
+
+So the whole build is one command, from a clone of this repository:
 
 ```bash
 python tools/package.py
@@ -136,6 +145,26 @@ ln -s "$PWD/ee_s5p_plugin" "$PROFILE/python/plugins/ee_s5p_plugin"
 
 Copying the `ee_s5p_plugin/` folder there works too, but then you have to re-copy
 after every change.
+
+If `New-Item` fails with `NewItemIOError ... ResourceExists`, something is already
+at that path -- usually a previous install. Remove it first with the `Remove-Item`
+command above, then create the link.
+
+### Replacing an older install
+
+*Install from ZIP* overwrites the folder of the same name, so installing over an
+earlier version works. A 0.1 install leaves orphans behind though -- `resources.py`,
+`scripts/`, `pb_tool.cfg` and friends, none of which 1.x uses -- so it is tidier to
+delete the old folder first:
+
+```powershell
+Remove-Item -Recurse -Force "$env:APPDATA\QGIS\QGIS3\profiles\default\python\plugins\ee_s5p_plugin"
+```
+
+Restart QGIS afterwards, or reload the plugin with [Plugin Reloader][reloader].
+
+Use either the zip or the symlink below, not both: whichever was written to the
+profile last is the one QGIS loads.
 
 ### Turning it on, and finding it
 

@@ -6,12 +6,27 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ### Documentation
 
+- README states plainly that **there is no compile step**, with a table of what the
+  0.1 build did (`pyrcc5`, `pyuic5`, `pb_tool`, `make`) and why each is gone. Coming
+  from the old version, or from most QGIS plugin tutorials, a compile step is a
+  reasonable thing to expect.
+- Added how to replace an older install, and what `NewItemIOError ...
+  ResourceExists` from the symlink command means.
+
 - README now covers building the zip and installing it as a custom plugin:
   `tools/package.py`, *Install from ZIP*, what ends up in the archive and why
   hand-zipping the checkout does not work, the symlink-into-your-profile route for
   development, how to enable and find the plugin, and a troubleshooting table.
 
 ### Fixed
+
+- **A virtual environment inside the checkout was being scanned.**
+  `tests/test_docs.py` walked the repository root skipping only build and cache
+  directories, so a `venv/` in the checkout pulled every file in `site-packages`
+  into the checks -- tripling the suite from 667 tests to 1,965, and risking
+  failures on third-party code. Virtual environments are now detected by their
+  `pyvenv.cfg` marker, rather than by guessing at directory names, and a test
+  asserts the collection stays the size of this repository.
 
 - **Mangled Windows paths in the docs.** Instructions written through a shell
   heredoc had their backslash-b and backslash-a sequences interpreted as
