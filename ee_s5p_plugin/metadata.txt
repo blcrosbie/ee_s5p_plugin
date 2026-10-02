@@ -89,7 +89,8 @@ changelog=1.1.0 (2026-10-01)
     - Areas of interest are reprojected to WGS84, so selections on projected
       layers no longer land in the wrong place.
     - Fixed: CSV columns misaligned for rows with differing fields; pixel
-      footprint polygons ~30% too small; hex colour palettes never recognised.
+      footprint polygons about a third too small; hex colour palettes never
+      recognised.
     - Full unit test suite and CI.
 
     0.1 (2020-12)

@@ -96,9 +96,13 @@ class Report:
 
 def read_metadata(archive: zipfile.ZipFile) -> dict:
     raw = archive.read(f"{PACKAGE}/metadata.txt").decode("utf-8")
-    parser = configparser.ConfigParser(interpolation=None)
+    # Interpolation ON: this is how plugins.qgis.org reads the file, so a bare
+    # '%' has to fail here rather than at upload time.
+    parser = configparser.ConfigParser()
     parser.optionxform = str
     parser.read_string(raw)
+    for key in parser["general"]:
+        parser["general"][key]
     return dict(parser.items("general"))
 
 

@@ -303,6 +303,44 @@ class TestMetadataTargetsQgis4:
             "this plugin out of the QGIS 4 Ready list"
         )
 
+    def test_metadata_parses_the_way_the_upload_server_does(self):
+        """plugins.qgis.org reads metadata.txt with configparser interpolation on.
+
+        A bare '%' is then an InterpolationSyntaxError and the upload is rejected.
+        Our own tooling used interpolation=None, which was more lenient than the
+        server, so "~30% too small" in the changelog sailed through every local
+        check and failed at the upload form.
+        """
+        import configparser
+
+        parser = configparser.ConfigParser()  # interpolation ON, like the server
+        parser.optionxform = str
+        path = os.path.join(PLUGIN_DIR, "metadata.txt")
+        try:
+            parser.read(path, encoding="utf-8")
+            for key in parser["general"]:
+                parser["general"][key]  # reading is lazy; force interpolation
+        except configparser.Error as error:
+            raise AssertionError(
+                f"plugins.qgis.org would reject metadata.txt: {error}. "
+                "Write a literal '%' as '%%', or reword to avoid it."
+            ) from error
+
+    def test_no_unescaped_percent_in_metadata(self):
+        """The same rule, stated so the failure names the offending line."""
+        path = os.path.join(PLUGIN_DIR, "metadata.txt")
+        with open(path, encoding="utf-8") as handle:
+            lines = handle.readlines()
+        offenders = []
+        for number, line in enumerate(lines, start=1):
+            stripped = line.replace("%%", "")
+            if "%" in stripped:
+                offenders.append(f"line {number}: {line.strip()}")
+        assert not offenders, (
+            "unescaped '%' in metadata.txt (write '%%' or reword): "
+            + "; ".join(offenders)
+        )
+
     def test_supports_qt6_is_absent(self):
         """It was removed from QGIS core and is no longer recognised.
 

@@ -81,12 +81,26 @@ def read_metadata() -> dict[str, str]:
     path = os.path.join(PACKAGE_DIR, "metadata.txt")
     if not os.path.exists(path):
         raise PackagingError(f"No metadata.txt at {path}")
-    parser = configparser.ConfigParser(interpolation=None)
+    # Interpolation ON, because that is what plugins.qgis.org uses when it reads
+    # the uploaded metadata.txt. Parsing with interpolation=None here would be
+    # more lenient than the server and let a bare '%' through, which the upload
+    # then rejects with InterpolationSyntaxError.
+    parser = configparser.ConfigParser()
     # QGIS metadata keys are camelCase; configparser lower-cases them unless told
     # otherwise, and silently returning None for 'qgisMinimumVersion' is worse
     # than keeping the spelling the file uses.
     parser.optionxform = str
-    parser.read(path, encoding="utf-8")
+    try:
+        parser.read(path, encoding="utf-8")
+        # Reading is lazy: force every value so interpolation actually runs.
+        for key in parser["general"]:
+            parser["general"][key]
+    except configparser.Error as error:
+        raise PackagingError(
+            "metadata.txt cannot be parsed the way plugins.qgis.org "
+            f"parses it: {error}. "
+            "A literal '%' must be written '%%' in metadata.txt."
+        ) from error
     if not parser.has_section("general"):
         raise PackagingError("metadata.txt has no [general] section")
     return dict(parser.items("general"))
