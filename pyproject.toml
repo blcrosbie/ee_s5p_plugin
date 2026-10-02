@@ -1,0 +1,70 @@
+# Tooling configuration only. The plugin is installed by QGIS from a zip, not by
+# pip, so there is no [project] table here.
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+# Network tests are opt-in: run them with `pytest -m network`.
+addopts = "-ra --strict-markers -m 'not network'"
+markers = [
+    "network: hits the live Earth Engine STAC catalog (deselect with -m 'not network')",
+]
+
+[tool.ruff]
+line-length = 90
+target-version = "py39"  # QGIS 3.22 LTR ships Python 3.9
+extend-exclude = ["dist", "build"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "W",    # warnings
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "C4",   # comprehensions
+    "SIM",  # simplify
+    "RET",  # return
+    "PTH",  # pathlib suggestions
+    "N",    # naming
+    "ARG",  # unused arguments
+    "TRY",  # exception anti-patterns
+    "RUF",
+]
+ignore = [
+    # Qt's own API is camelCase and overriding it is mandatory, and the
+    # `closingPlugin` signal name is the one QGIS plugins are expected to use.
+    "N802", "N815",
+    # En dashes, arrows and the multiplication sign are deliberate typography in
+    # strings shown to the user.
+    "RUF001", "RUF002", "RUF003",
+    # `EarthEngineUnavailable` reads better than `...UnavailableError`.
+    "N818",
+    # `def rowCount(self, parent=QModelIndex())` is the documented PyQt idiom.
+    "B008",
+    # Qt overrides and test doubles must keep the parameter names Qt passes,
+    # whether or not this implementation uses them.
+    "ARG001", "ARG002", "ARG005",
+    # `raise ... from err` inside a deliberate re-wrap is already used where it
+    # helps; requiring it everywhere adds noise to small guards.
+    "B904",
+    # Long messages in `raise` are intentional: they are shown to the user.
+    "TRY003",
+    # os.path is used deliberately: QGIS APIs take and return str paths.
+    "PTH100", "PTH103", "PTH105", "PTH107", "PTH108", "PTH110", "PTH112",
+    "PTH113", "PTH118", "PTH119", "PTH120", "PTH122", "PTH123", "PTH202",
+    "PTH207", "PTH208",
+    # Broad `except Exception` is correct where a whole crawl or a user action
+    # must survive one bad record; each one logs what it swallowed.
+    "BLE001",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests name things for readability and poke at internals on purpose.
+"tests/*" = ["N803", "N806", "SLF001", "E501", "SIM115", "RUF012"]
+# The tools are scripts: a late import after sys.path setup is the point.
+"tools/*" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "gui"]

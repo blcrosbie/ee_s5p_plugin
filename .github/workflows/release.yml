@@ -1,0 +1,81 @@
+name: Release
+
+# Tagging v1.0.0 builds the zip, checks it, attaches it to a GitHub release, and
+# -- only if the OSGEO credentials are configured -- uploads it to
+# plugins.qgis.org.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Upload to plugins.qgis.org"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: python -m pip install -r requirements-dev.txt
+
+      - name: Run the tests
+        run: python -m pytest tests -q
+
+      - name: Check the tag matches the plugin version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          version=$(python - <<'PY'
+          import configparser
+          p = configparser.ConfigParser(interpolation=None)
+          p.optionxform = str
+          p.read("ee_s5p_plugin/metadata.txt", encoding="utf-8")
+          print(p["general"]["version"])
+          PY
+          )
+          echo "tag=$tag metadata=$version"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag v$tag does not match metadata.txt version $version"
+            exit 1
+          fi
+
+      - name: Build the plugin zip
+        run: python tools/package.py
+
+      - name: Attach the zip to the GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
+
+      - name: Upload to plugins.qgis.org
+        # Set OSGEO_USERNAME / OSGEO_PASSWORD in the repository secrets to enable.
+        if: >-
+          (startsWith(github.ref, 'refs/tags/v') ||
+           github.event.inputs.publish == 'true')
+        env:
+          OSGEO_USERNAME: ${{ secrets.OSGEO_USERNAME }}
+          OSGEO_PASSWORD: ${{ secrets.OSGEO_PASSWORD }}
+        run: |
+          if [ -z "$OSGEO_USERNAME" ]; then
+            echo "::notice::OSGEO_USERNAME is not set; skipping the upload."
+            echo "Download the zip from the release and upload it by hand at" \
+                 "https://plugins.qgis.org/plugins/add/"
+            exit 0
+          fi
+          python -m pip install qgis-plugin-ci
+          zip=$(ls dist/*.zip)
+          echo "Uploading $zip"
+          python tools/upload_plugin.py "$zip"

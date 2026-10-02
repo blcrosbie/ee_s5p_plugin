@@ -1,0 +1,6 @@
+# Development and CI dependencies.
+# The plugin itself needs nothing beyond what QGIS already bundles: the Python
+# standard library plus `requests`. `ee` comes from the Google Earth Engine plugin.
+pytest>=7.4
+ruff>=0.6
+requests>=2.31

@@ -1,47 +1,45 @@
-# This file contains metadata for your plugin.
-
-# This file should be included when you package your plugin.# Mandatory items:
-
 [general]
-name=Google Earth Engine Sentinel 5P Ad Hoc Query
-qgisMinimumVersion=3.0
-description=This plugin ports the Copernicus S5P Near Real Time and Offline L3 datasets found on Google Earth Engine
-version=0.1
+name=Earth Engine Catalog Query
+qgisMinimumVersion=3.22
+qgisMaximumVersion=4.99
+supportsQt6=True
+description=Search the whole Google Earth Engine Data Catalog from QGIS, filter it by type, tags, time and area, then extract data onto the map.
+version=1.0.0
 author=Brandon Crosbie
 email=bcrosb31@gmail.com
 
-about=This plugin ports the European Space Agency and Copernicus Sentinel-5 Precursor mission data from the Google Earth Engine Data Catalog. This dataset inlcudes TROPOMI instrument measurments that record wavelength reflectance to detect atmospheric concentrations of ozone, methane, formaldehyde, aerosol, carbon monoxide, nitrogen oxide, and sulphur dioxide as well as cloud characteristics. This catalog is stored as an Image Collection, and can be filtered by start and end dates, as well as spatially. The purpose of this port is to allow any user familiar with GIS shapes and polygons to extract data at a custom resolution in the most convenient fashion. Google Earth Engine also includes Feature Collections that have been ported with this tool to help the user get started with established Geometric Filters such as Countries, Regions, (US) Counties), as well as datapoints like Power Plant locations to further analyze Emissions Factors with this atmospheric data. The data is handled as vector geometries, as the measurements are discrete in time intervals from the time of the Satellite Image Capture. The data can be saved as .csv, .json, .geojson in this first iteration.
+about=Browse all 1,100+ datasets in Google's Earth Engine Data Catalog without leaving QGIS and without copying dataset ids out of web pages. Search by id, title, publisher, tag or band name, then narrow by dataset type, provider, tags, date range and area of interest. The dataset list ships with the plugin, so browsing works offline, and can be refreshed from Google's published STAC catalog in a few seconds. For a chosen dataset the plugin shows bands with units and value ranges, availability and update cadence, licence and citation, and Google's own suggested colour palette. Extractions are estimated locally before being sent, so an over-large request is caught -- with a suggested resolution that would fit -- instead of failing after a long wait. Results are written as GeoJSON, CSV or JSON and loaded straight onto the map. Image collections, single images and feature collections are all supported. Requires the separate "Google Earth Engine" plugin, which provides the Earth Engine Python API and authentication; the catalog browser works without it.
 
-tracker=http://bugs
-repository=http://repo
-# End of mandatory metadata
+tracker=https://github.com/blcrosbie/ee_s5p_plugin/issues
+repository=https://github.com/blcrosbie/ee_s5p_plugin
+homepage=https://github.com/blcrosbie/ee_s5p_plugin
 
-# Recommended items:
-
-hasProcessingProvider=no
-# Uncomment the following line and add your changelog:
-# changelog=
-
-# Tags are comma separated with spaces allowed
-tags=python
-
-homepage=http://homepage
-category=Plugins
+category=Web
 icon=icon.png
-# experimental flag
-experimental=True
+tags=earth engine,google,remote sensing,satellite,raster,vector,sentinel,landsat,modis,atmosphere,air quality,climate,stac,catalog,download
 
-# deprecated flag (applies to the whole plugin, not just a single version)
+experimental=False
 deprecated=False
-
-# Since QGIS 3.8, a comma separated list of plugins to be installed
-# (or upgraded) can be specified.
-# Check the documentation for more information.
-# plugin_dependencies=
-
-Category of the plugin: Raster, Vector, Database or Web
-# category=
-
-# If the plugin can run on QGIS Server.
+hasProcessingProvider=no
 server=False
 
+changelog=1.0.0 (2026-10-01)
+    Rewritten for modern QGIS.
+    - Covers the entire Earth Engine Data Catalog (1,155 datasets) instead of a
+      92-dataset subset, sourced from Google's published STAC catalog rather than
+      by scraping HTML. No BeautifulSoup dependency.
+    - Runs on Qt 6 as well as Qt 5, so it works on QGIS 4.x builds.
+    - Catalog refresh, dataset reads and extractions run as background tasks:
+      QGIS no longer freezes, and they can be cancelled.
+    - Request size is estimated before sending, with a suggested resolution when
+      a request would exceed the Earth Engine limit.
+    - Dock is fully layout-managed and resizable; results are a sortable,
+      searchable table.
+    - Areas of interest are reprojected to WGS84, so selections on projected
+      layers no longer land in the wrong place.
+    - Fixed: CSV columns misaligned for rows with differing fields; pixel
+      footprint polygons ~30% too small; hex colour palettes never recognised.
+    - Full unit test suite and CI.
+
+    0.1 (2020-12)
+    Initial release: Sentinel-5P and selected collections, QGIS 3 / Qt 5.
