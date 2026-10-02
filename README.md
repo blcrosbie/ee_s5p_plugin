@@ -200,7 +200,7 @@ Both need a QGIS Python. On Windows with OSGeo4W that is
 
 | | |
 |---|---|
-| QGIS | 3.22 or newer, **including 4.x** — one code base for both Qt 5 and Qt 6 |
+| QGIS | 3.22 or newer, **including 4.x** — one code base, [verified on both Qt majors](#tested-against) |
 | For browsing | nothing beyond QGIS |
 | For extracting | the [**Google Earth Engine**][ee-plugin] plugin, which provides the `ee` Python API and handles authentication |
 | For real H3 indexes | the optional [`h3`][h3] package — without it, tiling falls back to an equivalent lat/lon grid |
@@ -466,6 +466,32 @@ ee_s5p_plugin/
 testable without a QGIS install, and it means a missing Earth Engine
 installation cannot stop you browsing the catalog. Both properties are enforced
 by tests in `tests/test_qt_compat.py`.
+
+### Tested against
+
+Every release is checked on real builds, not just the one on the developer's
+machine:
+
+| QGIS | Qt | PyQt | Python | API symbols | Smoke checks |
+|---|---|---|---|---|---|
+| 3.22.16 | 5.15.3 | 5.15.6 | 3.10.6 | 104/104 | 96/96 |
+| 3.40.6 | 6.8.1 | 6.8.0 | 3.12.10 | 104/104 | 96/96 |
+| 3.44.15 LTR | 5.15.13 | 5.15.11 | 3.12.14 | 104/104 | 96/96 |
+| 4.2.3 | 6.11.0 | 6.11.0 | 3.12.14 | 104/104 | 96/96 |
+
+Both Qt majors, both PyQt majors, Python 3.10 through 3.12 — with no conditional
+code anywhere. To check any other build yourself:
+
+```bash
+python3 tools/api_audit.py     # does every QGIS/Qt symbol exist here?
+python3 tools/smoke_test.py    # does it load, and does the dock work?
+```
+
+Or without installing anything, via the official QGIS images:
+
+```bash
+docker run --rm -v "$PWD:/src" -w /src qgis/qgis:ltr   sh -c "xvfb-run -a python3 tools/smoke_test.py"
+```
 
 ### Supporting Qt 5 and Qt 6 at once
 

@@ -2,7 +2,32 @@
 
 This project follows [Semantic Versioning](https://semver.org).
 
-## Unreleased
+## [1.1.0] — 2026-10-01
+
+### Verified on Qt 5 and Qt 6
+
+No code change was needed for QGIS 4 — the port done in 1.0.0 was already
+correct. What is new is that it is now *measured* on four real builds rather than
+argued from the migration guide:
+
+| QGIS | Qt | PyQt | Python | API symbols | Smoke checks |
+|---|---|---|---|---|---|
+| 3.22.16 | 5.15.3 | 5.15.6 | 3.10.6 | 104/104 | 96/96 |
+| 3.40.6 | 6.8.1 | 6.8.0 | 3.12.10 | 104/104 | 96/96 |
+| 3.44.15 LTR | 5.15.13 | 5.15.11 | 3.12.14 | 104/104 | 96/96 |
+| 4.2.3 | 6.11.0 | 6.11.0 | 3.12.14 | 104/104 | 96/96 |
+
+That spans both Qt majors, both PyQt majors, and Python 3.10 to 3.12. It also
+settles `qgisMinimumVersion=3.22`, which until now was a claim rather than a
+tested fact.
+
+The abstraction is simply `qgis.PyQt` — QGIS's own shim, which resolves to
+whichever Qt the host was built against — plus the scoped enum spelling
+everywhere. There is no compatibility layer of our own to go wrong, and both
+properties are enforced by `tests/test_qt_compat.py`, now covering a dozen more
+Qt5-only APIs (`QFontMetrics.width`, `setMargin`, `setResizeMode`,
+`QPalette.Background`, `Qt.MidButton`, `QRegExpValidator`, `sip.isdeleted`, …).
+
 
 ### Fixed
 

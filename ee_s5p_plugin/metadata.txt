@@ -3,7 +3,7 @@ name=Earth Engine Catalog Query
 qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
 description=Search the Google Earth Engine Data Catalog from QGIS -- Sentinel-5P and 1,100+ other datasets -- filter it, then extract data onto the map, auto-scaling large areas into H3 tiles.
-version=1.0.2
+version=1.1.0
 author=Brandon Crosbie
 email=bcrosb31@gmail.com
 
@@ -22,7 +22,25 @@ deprecated=False
 hasProcessingProvider=no
 server=False
 
-changelog=1.0.2 (2026-10-01)
+changelog=1.1.0 (2026-10-01)
+    Verified on Qt 5 and Qt 6, and an important area-of-interest fix.
+    - Runs unchanged on QGIS 3.22, 3.40, 3.44 LTR and 4.2, across PyQt 5.15.6 to
+      6.11.0 and Python 3.10 to 3.12. Every Qt import goes through qgis.PyQt and
+      every enum uses the scoped spelling, which is all Qt6 requires; a test
+      enforces both so it cannot regress.
+    - Fixed: "Use selection" only looked at the active layer, so selecting
+      features on one layer while another was highlighted left the area of
+      interest unset and extracted the dataset's whole footprint. The selection is
+      now taken from any layer that has one, each reprojected with its own CRS.
+    - Extracting with no area now warns what would actually be downloaded, naming
+      the dataset; for tables it says this means every feature and that Earth
+      Engine truncates at 5,000 without warning.
+    - A missing Earth Engine session is explained with the sign-in steps instead
+      of raising a traceback, including the fact that authenticating clears the
+      Cloud project the Earth Engine plugin stores in the same file.
+    - Live status panel: position, records, throughput, time remaining, Cancel.
+
+    1.0.2 (2026-10-01)
     Live progress feedback for heavy downloads.
     - A status panel under the results list reports position, records fetched,
       throughput and remaining time, and a Cancel button to stop the job.

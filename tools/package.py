@@ -27,6 +27,9 @@ DIST_DIR = os.path.join(REPO_ROOT, "dist")
 
 #: Never shipped to users.
 EXCLUDE_PATTERNS = (
+    # Size variants are build inputs regenerated from icon.svg; only icon.png is
+    # referenced (by metadata.txt) and shipping the rest is ~150 KB of dead weight.
+    "icon_*.png",
     "__pycache__",
     "*.pyc",
     "*.pyo",

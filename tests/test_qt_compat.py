@@ -126,6 +126,20 @@ BANNED_PATTERNS = {
     r"\bQtWidgets\.QApplication\.desktop\b": "QGuiApplication.screens()",
     r"\bfrom\s+\.resources\b": "load the icon from a file path -- pyrcc is gone",
     r"\bQVariant\(": "plain Python values -- QVariant wrapping is unnecessary",
+    # Renamed or removed between Qt5 and Qt6.
+    r"\bQFontMetrics[A-Za-z]*\.width\(": "horizontalAdvance()",
+    r"\.setMargin\(": "setContentsMargins()",
+    r"\bQPalette\.(Background|Foreground)\b": "QPalette.ColorRole.Window / WindowText",
+    r"\bsetResizeMode\(": "setSectionResizeMode()",
+    r"\bQt\.MidButton\b": "Qt.MouseButton.MiddleButton",
+    r"\.setCodec\(": "QTextStream.setEncoding()",
+    r"\bQLibraryInfo\.location\b": "QLibraryInfo.path()",
+    r"\bqsrand\b|\bqrand\b": "the random module",
+    r"\bQRegExpValidator\b": "QRegularExpressionValidator",
+    r"\bQStringList\b": "a plain list of str",
+    # sip is not re-exported by every QGIS build, and the guard silently returned
+    # False where it is missing; track lifetime with Qt signals instead.
+    r"\bsip\.isdeleted\b": "the taskCompleted / taskTerminated signals",
 }
 
 
