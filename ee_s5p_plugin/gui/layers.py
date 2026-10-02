@@ -80,39 +80,61 @@ def _to_wgs84_transform(source_crs):
     )
 
 
-def selected_geometry_as_geojson(iface) -> dict | None:
-    """The selected features of the active layer, as WGS84 GeoJSON.
+def layers_with_selection(iface=None) -> list:
+    """Every vector layer in the project with features selected, active first.
 
-    Returns ``None`` when there is no vector selection.  Reprojecting to WGS84 is
-    the part v0.1 missed: it read raw layer coordinates and handed them to Earth
-    Engine as degrees, so any projected layer produced an area of interest in the
-    wrong place (usually far out at sea).
+    Looking only at the active layer is a trap: the layer you select features on
+    and the layer that happens to be highlighted in the Layers panel are routinely
+    different, and the result was an area of interest that silently stayed unset.
     """
-    layer = iface.activeLayer() if iface else None
-    if not isinstance(layer, QgsVectorLayer):
-        return None
-    features = list(layer.selectedFeatures())
-    if not features:
-        return None
+    active = iface.activeLayer() if iface else None
+    found = [
+        layer
+        for layer in QgsProject.instance().mapLayers().values()
+        if isinstance(layer, QgsVectorLayer) and layer.selectedFeatureCount() > 0
+    ]
+    # Active layer first, so a deliberate choice still wins; then by name, so the
+    # result does not depend on QGIS's map ordering.
+    found.sort(key=lambda layer: (layer is not active, layer.name()))
+    return found
 
-    transform = _to_wgs84_transform(layer.crs())
-    geometries = []
-    for feature in features:
-        geometry = QgsGeometry(feature.geometry())
-        if geometry.isEmpty():
-            continue
-        if layer.crs().authid() != WGS84 and geometry.transform(transform) != 0:
-            continue
-        as_json = geometry.asJson()
-        if as_json:
-            geometries.append(as_json)
 
-    if not geometries:
-        return None
+def describe_selection(iface=None) -> str:
+    """What is selected and where, for telling the user what was used."""
+    selected = layers_with_selection(iface)
+    if not selected:
+        return "nothing is selected on any vector layer"
+    parts = [f"{layer.selectedFeatureCount()} on '{layer.name()}'" for layer in selected]
+    return ", ".join(parts)
 
+
+def selected_geometry_as_geojson(iface) -> dict | None:
+    """Selected features from any vector layer, as WGS84 GeoJSON.
+
+    Returns ``None`` when nothing is selected anywhere.  Each layer is reprojected
+    with its *own* transform, since a selection can span layers in different CRSs.
+    Reprojecting at all is the part v0.1 missed: it read raw layer coordinates and
+    handed them to Earth Engine as degrees, so any projected layer produced an area
+    of interest in the wrong place.
+    """
     import json
 
-    parsed = [json.loads(text) for text in geometries]
+    parsed: list[dict] = []
+    for layer in layers_with_selection(iface):
+        transform = _to_wgs84_transform(layer.crs())
+        needs_transform = layer.crs().authid() != WGS84
+        for feature in layer.selectedFeatures():
+            geometry = QgsGeometry(feature.geometry())
+            if geometry.isEmpty():
+                continue
+            if needs_transform and geometry.transform(transform) != 0:
+                continue
+            as_json = geometry.asJson()
+            if as_json:
+                parsed.append(json.loads(as_json))
+
+    if not parsed:
+        return None
     if len(parsed) == 1:
         return parsed[0]
     return {

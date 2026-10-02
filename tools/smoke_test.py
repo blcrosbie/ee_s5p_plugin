@@ -66,7 +66,7 @@ class FakeInterface:
         return self._bar
 
     def activeLayer(self):
-        return None
+        return getattr(self, "active", None)
 
     def addToolBarIcon(self, action):
         self.toolbar_actions.append(action)
@@ -555,6 +555,119 @@ def check_progress_panel(checks: Checks, dock) -> None:
         panel.finish()
 
 
+def check_area_of_interest(checks: Checks, dock, iface) -> None:
+    """The area of interest must come from wherever the user selected features.
+
+    QA found a whole-of-USA extraction of TIGER counties: the polygon was selected
+    on one layer while a different layer was active, so the selection was never
+    found, the area stayed unset, and extraction fell back to the dataset's own
+    footprint. Looking only at the active layer was the bug.
+    """
+    from qgis.core import QgsFeature, QgsGeometry, QgsPointXY, QgsProject, QgsVectorLayer
+
+    from ee_s5p_plugin.gui import layers
+
+    def polygon_layer(name, ring, crs="EPSG:4326"):
+        layer = QgsVectorLayer(f"Polygon?crs={crs}", name, "memory")
+        feature = QgsFeature()
+        feature.setGeometry(
+            QgsGeometry.fromPolygonXY([[QgsPointXY(x, y) for x, y in ring]])
+        )
+        layer.dataProvider().addFeatures([feature])
+        layer.updateExtents()
+        QgsProject.instance().addMapLayer(layer)
+        return layer
+
+    florida = [(-82.7, 27.6), (-82.4, 27.6), (-82.4, 27.9), (-82.7, 27.9), (-82.7, 27.6)]
+    usa = [(-125, 25), (-66, 25), (-66, 49), (-125, 49), (-125, 25)]
+
+    drawn = polygon_layer("Test", florida)
+    counties = polygon_layer("TIGER_2018_Counties_20180101", usa)
+    drawn.selectAll()
+    iface.active = counties  # the reported state: a different layer is active
+
+    checks.check(
+        "selection is on a layer that is not the active one",
+        drawn.selectedFeatureCount() == 1 and counties.selectedFeatureCount() == 0,
+    )
+
+    found = layers.selected_geometry_as_geojson(iface)
+    if checks.check(
+        "a selection on a non-active layer is still found",
+        found is not None,
+        "selected_geometry_as_geojson returned None",
+    ):
+        bbox = layers.geojson_bbox(found)
+        checks.check(
+            "the area is the selected polygon, not the whole dataset",
+            bbox is not None and bbox[0] > -83 and bbox[2] < -82,
+            f"bbox={bbox}",
+        )
+
+    checks.check(
+        "the source layer is named back to the user",
+        "Test" in layers.describe_selection(iface),
+        layers.describe_selection(iface),
+    )
+
+    dock.use_selection_as_area()
+    checks.check(
+        "Use selection sets the area of interest",
+        dock._aoi_geojson is not None and dock._aoi_bbox is not None,
+        dock.aoiLabel.text(),
+    )
+    checks.check(
+        "the area label names the source layer",
+        "Test" in dock.aoiLabel.text(),
+        dock.aoiLabel.text(),
+    )
+    aoi = list(dock._aoi_bbox)
+    checks.check(
+        "the stored area covers the selection only",
+        aoi[0] > -83 and aoi[2] < -82 and aoi[3] < 28,
+        f"{aoi}",
+    )
+
+    # A selection in a projected CRS must be reprojected, not passed through.
+    QgsProject.instance().removeMapLayer(drawn.id())
+    mercator = polygon_layer(
+        "Projected",
+        [
+            (-9208000, 3200000),
+            (-9170000, 3200000),
+            (-9170000, 3240000),
+            (-9208000, 3240000),
+            (-9208000, 3200000),
+        ],
+        crs="EPSG:3857",
+    )
+    mercator.selectAll()
+    reprojected = layers.selected_geometry_as_geojson(iface)
+    if checks.check("a projected selection is found", reprojected is not None):
+        bbox = layers.geojson_bbox(reprojected)
+        checks.check(
+            "a projected selection is reprojected to WGS84",
+            bbox is not None and -180 <= bbox[0] <= 180 and -90 <= bbox[1] <= 90,
+            f"bbox={bbox}",
+        )
+
+    # Extracting with no area must say what it would really download.
+    dock.clear_area_of_interest()
+    dataset = dock.catalog.get("TIGER/2018/Counties")
+    if checks.check("TIGER 2018 Counties is in the catalog", dataset is not None):
+        warning = dock._no_area_warning(dataset)
+        for label, fragment in (
+            ("says every feature would be fetched", "every feature"),
+            ("mentions the feature limit", "5,000"),
+            ("says how to set an area", "Use selection"),
+        ):
+            checks.check(f"the no-area warning {label}", fragment in warning, warning)
+
+    for layer in (counties, mercator):
+        QgsProject.instance().removeMapLayer(layer.id())
+    iface.active = None
+
+
 def request_fits(tile, built) -> bool:
     from ee_s5p_plugin.core import request as request_mod
 
@@ -747,6 +860,7 @@ def run() -> int:
         check_styling(checks)
         check_autoscale(checks, dock)
         check_progress_panel(checks, dock)
+        check_area_of_interest(checks, dock, iface)
 
         plugin.unload()
         checks.check("unload removes the action", len(iface.toolbar_actions) == 0)

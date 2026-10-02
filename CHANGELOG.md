@@ -6,6 +6,26 @@ This project follows [Semantic Versioning](https://semver.org).
 
 ### Fixed
 
+- **"Use selection" ignored selections on any layer but the active one**, which
+  meant an area of interest silently stayed unset and extraction fell back to the
+  dataset's own footprint. Found in QA: a polygon drawn and selected over Florida,
+  with the TIGER counties layer active, extracted every county in the United
+  States. The layer you select features on and the layer highlighted in the Layers
+  panel are routinely different, so the selection is now taken from *every* vector
+  layer that has one -- active layer first -- and each layer is reprojected with
+  its own transform, since a selection can span layers in different CRSs.
+- The area label now names the layers the selection came from
+  (`Selection (1 on 'Test'): 980 km²`), so it is visible that the right area was
+  picked up.
+- "Nothing selected" now says no layer has a selection, rather than implying the
+  wrong layer was active, and points at Draw area as the alternative.
+- **Extracting with no area of interest is now an explicit warning about what
+  would actually be downloaded**, naming the dataset. Tables get no size estimate
+  -- feature density is not published -- so previously the only signal was "Size
+  cannot be estimated", and a request for every county in the United States looked
+  identical to a small one. For a table the warning now says it means every
+  feature, and that Earth Engine truncates at 5,000 with no warning.
+
 - **Extract raised a traceback when Earth Engine was not signed in.** Being able to
   import `ee` is not the same as having a session: the Google Earth Engine plugin
   bundles its own copy of `ee` on `sys.path`, which imports cleanly even when that

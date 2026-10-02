@@ -771,15 +771,25 @@ class EarthEngineCatalogDockWidget(QDockWidget):
             messages.warn(
                 self,
                 self.tr("Nothing selected"),
-                self.tr("Select one or more features on a vector layer first."),
+                self.tr("No features are selected on any vector layer."),
+                self.tr(
+                    "Select features with the Select tool, then press Use "
+                    "selection again. The layer does not have to be the active "
+                    "one. To draw an area instead, enter a longitude, latitude "
+                    "and size above and press Draw area."
+                ),
             )
             return
         bbox = layers.geojson_bbox(geojson)
+        # Name the source layers: the selection is often on a different layer from
+        # the one highlighted in the Layers panel, and saying which was used is how
+        # the user knows the area is the one they meant.
         self._set_area(
             geojson,
             bbox,
-            self.tr("Map selection: {area:,.0f} km²").format(
-                area=geometry.bbox_area_km2(bbox) if bbox else 0
+            self.tr("Selection ({source}): {area:,.0f} km²").format(
+                source=layers.describe_selection(self.iface),
+                area=geometry.bbox_area_km2(bbox) if bbox else 0,
             ),
         )
 
@@ -1019,13 +1029,9 @@ class EarthEngineCatalogDockWidget(QDockWidget):
             and self._aoi_bbox is None
             and not messages.confirm(
                 self,
-                self.tr("No area of interest"),
-                self.tr("Use the dataset's full extent?"),
-                self.tr(
-                    "For a global dataset this is very likely to exceed the "
-                    "Earth Engine request limit. Setting an area on the Area tab "
-                    "is usually what you want."
-                ),
+                self.tr("No area of interest is set"),
+                self.tr("Download the whole of {dataset}?").format(dataset=dataset.id),
+                self._no_area_warning(dataset),
             )
         ):
             return
@@ -1055,6 +1061,44 @@ class EarthEngineCatalogDockWidget(QDockWidget):
             self.tr("Extracting {dataset}…").format(dataset=dataset.id),
             duration=3,
         )
+
+    def _no_area_warning(self, dataset) -> str:
+        """Say what extracting with no area actually means for this dataset.
+
+        Tables get no size estimate -- feature density is not published -- so
+        without this the only signal is "Size cannot be estimated", and a request
+        for every county in the United States looks the same as a small one.
+        """
+        extent = (
+            self.tr("the whole world")
+            if dataset.is_global
+            else self.tr("its entire published extent")
+        )
+        lines = [
+            self.tr(
+                "Nothing on the Area tab is set, so this would ask Earth Engine "
+                "for {extent}."
+            ).format(extent=extent),
+        ]
+        if dataset.type == "FeatureCollection":
+            lines.append(
+                self.tr(
+                    "That means every feature in the dataset. Earth Engine stops "
+                    "at {limit:,} features per request, so a large table will come "
+                    "back truncated with no warning."
+                ).format(limit=plan_mod.FEATURE_LIMIT)
+            )
+        else:
+            lines.append(
+                self.tr("That is very likely to exceed the Earth Engine request limit.")
+            )
+        lines.append(
+            self.tr(
+                "Set an area first: select features on any layer and press Use "
+                "selection, draw one, or press Use canvas."
+            )
+        )
+        return "\n\n".join(lines)
 
     def _build_region(self, request: ExtractRequest):
         if self._aoi_geojson is not None:
